@@ -27,6 +27,21 @@ class Extractor:
 
         return urls
 
+    def parse_img_urls(self, html_content, base_url):
+        """
+        This function extracts all img urls from html
+        :param html_content: html content to parse
+        :return: array of img URLs
+        """
+        bs = BeautifulSoup(html_content)
+        urls = []
+
+        for img in bs.find_all('img'):
+            url = base_url + img['src']
+            print("Found image URL:", url)
+            urls.append(url)
+        return urls
+
     def parse_sitemap(self, xml):
         """
         This function is used for parsing sitemap
@@ -65,17 +80,23 @@ if __name__ == "__main__":
     # url samples
     # django test page
     url1 = 'http://127.0.0.1:8000'
+    url2 = 'https://www.google.si'
 
     # Init classes
     e = Extractor()
     d = HttpDownloader()
 
     # Test url parser
-    e.parse_urls(d.get_page_body(url1))
+    content = d.get_page_body(url1)
+    e.parse_urls(content)
+
+    # get google landing page and parse img
+    content2 = d.get_page_body(url2)
+    e.parse_img_urls(content2, url2)
 
     # Test sitemap parser
-    sitemap_file = open('/home/gore/Workspace/ieps/seminar_01/test_files/sitemap.xml').read()
-    sitemap_urls = e.parse_sitemap(sitemap_file)
-    print(sitemap_urls)
+    # sitemap_file = open('/home/gore/Workspace/ieps/seminar_01/test_files/sitemap.xml').read()
+    # sitemap_urls = e.parse_sitemap(sitemap_file)
+    # print(sitemap_urls)
 
     # Link(from_page='asd', to_page='bsd').save()
