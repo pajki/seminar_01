@@ -87,16 +87,20 @@ if __name__ == "__main__":
     d = HttpDownloader()
 
     # Test url parser
-    content = d.get_page_body(url1)
-    e.parse_urls(content)
+    # content = d.get_page_body(url1)
+    # e.parse_urls(content)
 
     # get google landing page and parse img
-    content2 = d.get_page_body(url2)
-    e.parse_img_urls(content2, url2)
+    # content2 = d.get_page_body(url2)
+    # e.parse_img_urls(content2, url2)
 
     # Test sitemap parser
-    # sitemap_file = open('/home/gore/Workspace/ieps/seminar_01/test_files/sitemap.xml').read()
-    # sitemap_urls = e.parse_sitemap(sitemap_file)
-    # print(sitemap_urls)
+    xml_content = d.get_sitemap_for_url(url1, True)
+    sitemap_urls = e.parse_sitemap(xml_content)
+    print(sitemap_urls)
+
+    robots_content = d.get_robots_file(url1, True)
+    # print(robots_content)
+    # e.parse_robots_file(robots_content)
 
     # Link(from_page='asd', to_page='bsd').save()

@@ -58,7 +58,7 @@ class HttpDownloader:
         """
         path = base_url
         if append_file_name:
-            path += '/robots.txt'
+            path += '/sitemap.xml'
 
         print('GET sitemap.xml for %s' % path)
         response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
