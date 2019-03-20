@@ -25,7 +25,15 @@ in our project:
     # And create a new database and user
     create database crawldb;
     create user crawldb with password 'crawldb';
+    alter user crawldb with superuser;
     grant all privileges on database crawldb to crawldb;
+    
+    ctrl + d (leave the psql environment)
+    
+    # Now import the database tables and indices
+    export PGPASSWORD=crawldb
+    # Don't forget to change the path to the importdb.sql file!
+    psql -h localhost -d crawldb -U crawldb -p 5432 -a -w -f /home/andraz/Projects/seminar_01/importdb.sql
     
 Secondly we clone the project, create a virtual environment (optional), install the required
 packages and migrate the database to the current state (no extra SQL script needed).
@@ -36,9 +44,18 @@ packages and migrate the database to the current state (no extra SQL script need
     # Optionally create a fresh virtual environment (docs: https://virtualenvwrapper.readthedocs.io/en/latest/install.html)
     mkvirtualenv -p /usr/bin/python3 pajki_seminar01
     
-    # Move into fresly installed directory
+    # Move into freshly installed directory
     cd seminar_01
     # Install the required packages
     pip install -r requirements.txt
     # Migrate the database
     python manage.py migrate
+    
+If we want to manage data, we can easily achieve this by accessing the Django admin.
+    
+    # Create super user
+    python manage.py createsuperuser
+    # Start the development server
+    python manage.py runserver 8001
+    
+    # Go to localhost:8001/admin and enter the credentials you just created. You should be able to access the admin page.

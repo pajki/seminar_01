@@ -12,7 +12,6 @@ class DataType(models.Model):
     code = models.CharField(primary_key=True, max_length=20)
 
     class Meta:
-        managed = False
         db_table = 'data_type'
 
 
@@ -24,7 +23,6 @@ class Image(models.Model):
     accessed_time = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'image'
 
 
@@ -33,7 +31,6 @@ class Link(models.Model):
     to_page = models.ForeignKey('Page', models.DO_NOTHING, db_column='to_page', related_name='to_page')
 
     class Meta:
-        managed = False
         db_table = 'link'
         unique_together = (('from_page', 'to_page'),)
 
@@ -47,7 +44,6 @@ class Page(models.Model):
     accessed_time = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'page'
 
 
@@ -57,7 +53,6 @@ class PageData(models.Model):
     data = models.BinaryField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'page_data'
 
 
@@ -65,7 +60,6 @@ class PageType(models.Model):
     code = models.CharField(primary_key=True, max_length=20)
 
     class Meta:
-        managed = False
         db_table = 'page_type'
 
 
@@ -75,5 +69,4 @@ class Site(models.Model):
     sitemap_content = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'site'
