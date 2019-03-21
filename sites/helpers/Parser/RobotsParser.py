@@ -20,22 +20,23 @@ def check_robots_url(url):
 
 
 class RobotsParser:
-    def __init__(self):
+    def __init__(self, url):
         self.rp = robotparser.RobotFileParser()
+        self.page_url = check_robots_url(url)
         self.content = None
+        self.file_exists = False
 
-    def parse_robots_file(self, page_url):
+    def parse_robots_file(self):
         """
         Get robots.txt file for page.
         Check url structure and append robots.txt to the url.
-
-        :param page_url: page URL
+        Return True if robots exists
+        :return Boolean
         """
-        # check url structure
-        robots_url = check_robots_url(page_url)
+        self.file_exists = False
 
         # set robots url to fetch
-        self.rp.set_url(robots_url)
+        self.rp.set_url(self.page_url)
 
         # request and read robots file
         try:
@@ -44,14 +45,16 @@ class RobotsParser:
 
             # sets the time the robots.txt file was last fetched to the current time.
             self.rp.modified()
-
+            self.file_exists = True
         except URLError as e:
             print("\nERROR\nMsg:\tCan't read robots file")
-            print("URL:\t%s" % robots_url)
+            print("URL:\t%s" % self.page_url)
             if hasattr(e, 'code'):
                 print("Code:\t%s" % e.code)
             if hasattr(e, 'reason'):
                 print("Reason:\t%s" % e.reason)
+
+        return self.file_exists
 
     def get_crawl_delay(self, useragent="*"):
         """
@@ -90,14 +93,13 @@ class RobotsParser:
         """
         return self.rp.can_fetch(useragent=useragent, url=url)
 
-    def get_robots_content(self, page_url, encoding="utf-8"):
+    def get_robots_content(self, encoding="utf-8"):
         """
         Download robots.txt content
-        :param page_url: url to download from
         :param encoding: file encoding
         :return:
         """
-        robots_url = check_robots_url(page_url)
+        robots_url = check_robots_url(self.page_url)
 
         try:
             with urlopen(robots_url) as stream:
@@ -112,15 +114,13 @@ class RobotsParser:
 
         return self.content
 
-    def get_robots_content2(self, page_url):
+    def get_robots_content2(self):
         """
         Use downloader class to download robots content
-        :param page_url:
         :return:
         """
         downloader = HttpDownloader()
-        robots_url = check_robots_url(page_url)
-        self.content = downloader.get_robots_file(base_url=robots_url)
+        self.content = downloader.get_robots_file(base_url=self.page_url)
         return self.content
 
     def check_for_sitemap_url(self):
@@ -131,6 +131,7 @@ class RobotsParser:
         sitemap_url = None
 
         if self.content is None:
+            print("ERR: No robots content. Download it?")
             return None
 
         if "Sitemap" in self.content:
@@ -144,10 +145,11 @@ if __name__ == "__main__":
     print("main RobotsParser")
     local_url = "http://127.0.0.1:8000/robots.txt"
     # init
-    r = RobotsParser()
+    r = RobotsParser(local_url)
 
     # parse robots
-    r.parse_robots_file(page_url=local_url)
+    r_exists = r.parse_robots_file()
+    print("Robots file exists: %s" % r_exists)
 
     # test delay
     delay = r.get_crawl_delay()
@@ -158,8 +160,8 @@ if __name__ == "__main__":
     print("request rate: %s" % rate)
 
     # download robots content
-    content = r.get_robots_content(local_url)
-    content2 = r.get_robots_content2(local_url)
+    content = r.get_robots_content()
+    content2 = r.get_robots_content2()
     print("Content is the same: ", (content == content2))
     # print(content)
 
