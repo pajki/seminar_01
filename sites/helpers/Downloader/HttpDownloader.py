@@ -28,7 +28,7 @@ class HttpDownloader:
         :param url: Url for request
         :return: response object
         """
-        response = requests.head(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
+        response = requests.get(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
         return response
 
     def get_page_body(self, url):

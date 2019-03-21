@@ -12,8 +12,20 @@ class Extractor:
     def __init__(self):
         pass
 
+    def clean_html(self, html_content):
+        """
+        Clean html
+        TODO: we might need to handle file encoding
+        Time consuming!
+        :param html_content: html content to clean
+        :return: cleaned content
+        """
+        tree = BeautifulSoup(html_content)
+        return tree.prettify()
+
     def parse_urls(self, html_content):
         """
+        TODO add base url if missing
         This function extracts all urls from html
         :param html_content: html content to parse
         :return: array of URLs
@@ -22,13 +34,14 @@ class Extractor:
         urls = []
 
         for url in bs.find_all('a', href=True):
-            print("Found the URL:", url['href'])
+            # print("Found the URL:", url['href'])
             urls.append(url['href'])
 
         return urls
 
     def parse_img_urls(self, html_content, base_url):
         """
+        TODO: use correct base_url -> probably need to make HEAD request and use origin url from request
         This function extracts all img urls from html
         :param html_content: html content to parse
         :return: array of img URLs
@@ -38,7 +51,7 @@ class Extractor:
 
         for img in bs.find_all('img'):
             url = base_url + img['src']
-            print("Found image URL:", url)
+            # print("Found image URL:", url)
             urls.append(url)
         return urls
 
@@ -49,31 +62,22 @@ class Extractor:
         :return: List of found urls
         """
         urls = []
+
+        if xml is None:
+            return urls
+
         bs = BeautifulSoup(xml)
         sitemap_tags = bs.find_all("sitemap")
 
         print("The number of sitemaps are {0}".format(len(sitemap_tags)))
+
+        # return [sitemap.findNext('loc').text for sitemap in sitemap_tags]
         for sitemap in sitemap_tags:
             # find next url in sitemap
             url = sitemap.findNext("loc").text
             # print(url)
             urls.append(url)
         return urls
-
-
-    def parse_robots_file(self, content):
-        """
-        path = base_url
-        if append_file_name:
-            path += '/robots.txt'
-
-        self.robot_parser.set_url(path)
-        self.robot_parser.read()
-        rrate = self.robot_parser.request_rate('*')
-        print(rrate)
-        print(self.robot_parser.crawl_delay('*'))
-        """
-        pass
 
 
 if __name__ == "__main__":
@@ -87,20 +91,16 @@ if __name__ == "__main__":
     d = HttpDownloader()
 
     # Test url parser
-    # content = d.get_page_body(url1)
-    # e.parse_urls(content)
+    content = d.get_page_body(url1)
+    e.parse_urls(content)
 
     # get google landing page and parse img
-    # content2 = d.get_page_body(url2)
-    # e.parse_img_urls(content2, url2)
+    content2 = d.get_page_body(url2)
+    e.parse_img_urls(content2, url2)
 
     # Test sitemap parser
     xml_content = d.get_sitemap_for_url(url1, True)
     sitemap_urls = e.parse_sitemap(xml_content)
     print(sitemap_urls)
-
-    robots_content = d.get_robots_file(url1, True)
-    # print(robots_content)
-    # e.parse_robots_file(robots_content)
 
     # Link(from_page='asd', to_page='bsd').save()
