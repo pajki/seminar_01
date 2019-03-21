@@ -4,6 +4,7 @@ from urllib.error import *
 
 from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 
+
 def check_robots_url(url):
     """
     Check url structure and append robots.txt if needed

@@ -25,6 +25,7 @@ class Extractor:
 
     def parse_urls(self, html_content):
         """
+        TODO add base url if missing
         This function extracts all urls from html
         :param html_content: html content to parse
         :return: array of URLs
@@ -33,13 +34,14 @@ class Extractor:
         urls = []
 
         for url in bs.find_all('a', href=True):
-            print("Found the URL:", url['href'])
+            # print("Found the URL:", url['href'])
             urls.append(url['href'])
 
         return urls
 
     def parse_img_urls(self, html_content, base_url):
         """
+        TODO: use correct base_url -> probably need to make HEAD request and use origin url from request
         This function extracts all img urls from html
         :param html_content: html content to parse
         :return: array of img URLs
@@ -49,7 +51,7 @@ class Extractor:
 
         for img in bs.find_all('img'):
             url = base_url + img['src']
-            print("Found image URL:", url)
+            # print("Found image URL:", url)
             urls.append(url)
         return urls
 
@@ -60,6 +62,10 @@ class Extractor:
         :return: List of found urls
         """
         urls = []
+
+        if xml is None:
+            return urls
+
         bs = BeautifulSoup(xml)
         sitemap_tags = bs.find_all("sitemap")
 
