@@ -1,15 +1,21 @@
-import time
-import threading
+from django.core.management.base import BaseCommand
 
-from django.core.management.base import BaseCommand, CommandError
+from sites.helpers.ThreadManager.ThreadManager import ThreadManager
 
 
 class Command(BaseCommand):
     help = 'Starts the crawler.'
 
     def add_arguments(self, parser):
+        """
+        Define positional and optional arguments to manage.py call.
+        """
         parser.add_argument('concurrency', type=int)
 
     def handle(self, *args, **options):
-        print("This is the entry point of our crawler.")
-        print("Starting {} crawlers...".format(options['concurrency']))
+        """
+        Entry point of our crawler, runs the thread manager.
+        """
+        print("Starting thread manager...")
+        thread_manager = ThreadManager(options["concurrency"])
+        thread_manager.run()
