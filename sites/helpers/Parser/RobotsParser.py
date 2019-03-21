@@ -2,6 +2,7 @@ from urllib.request import urlopen
 import urllib.robotparser as robotparser
 from urllib.error import *
 
+from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 
 def check_robots_url(url):
     """
@@ -111,6 +112,17 @@ class RobotsParser:
 
         return self.content
 
+    def get_robots_content2(self, page_url):
+        """
+        Use downloader class to download robots content
+        :param page_url:
+        :return:
+        """
+        downloader = HttpDownloader()
+        robots_url = check_robots_url(page_url)
+        self.content = downloader.get_robots_file(base_url=robots_url)
+        return self.content
+
     def check_for_sitemap_url(self):
         """
         Check if sitemap is defined in robots.txt file. If it exists return URL.
@@ -147,6 +159,8 @@ if __name__ == "__main__":
 
     # download robots content
     content = r.get_robots_content(local_url)
+    content2 = r.get_robots_content2(local_url)
+    print("Content is the same: ", (content == content2))
     # print(content)
 
     # check if sitemap url exists in robots.txt
