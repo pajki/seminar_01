@@ -44,10 +44,10 @@ class HttpDownloader:
         # TODO handle error codes
         if response.status_code is 200:
             print('Status code: ', response.status_code)
-            return response.text
+            return response.text, response.status_code
         else:
             print('Status code: ', response.status_code)
-            return None
+            return None, response.status_code
 
     def get_sitemap_for_url(self, base_url, append_file_name=False):
         """
@@ -73,7 +73,7 @@ class HttpDownloader:
         This function retrieves robots file for specified url address
         :param base_url: Base url address
         :param append_file_name: append /robots.txt if True
-        :return: robots.txt content
+        :return: robots.txt content and status code
         """
         path = base_url
         if append_file_name:
@@ -85,7 +85,7 @@ class HttpDownloader:
             print('ERROR: robots.txt not found for %s' % path)
             return None
         # got robots.txt
-        return response.text
+        return response.text, response.status_code
 
 
 if __name__ == "__main__":

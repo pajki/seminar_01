@@ -84,23 +84,24 @@ if __name__ == "__main__":
     # url samples
     # django test page
     url1 = 'http://127.0.0.1:8000'
-    url2 = 'https://www.google.si'
+    url2 = 'https://www.najdi.si'
 
     # Init classes
     e = Extractor()
     d = HttpDownloader()
 
     # Test url parser
-    content = d.get_page_body(url1)
-    e.parse_urls(content)
+    # content = d.get_page_body(url1)
+    # e.parse_urls(content)
 
     # get google landing page and parse img
     content2 = d.get_page_body(url2)
-    e.parse_img_urls(content2, url2)
+    urls = e.parse_img_urls(content2, url2)
+    print(urls)
 
     # Test sitemap parser
-    xml_content = d.get_sitemap_for_url(url1, True)
-    sitemap_urls = e.parse_sitemap(xml_content)
-    print(sitemap_urls)
+    # xml_content = d.get_sitemap_for_url(url1, True)
+    # sitemap_urls = e.parse_sitemap(xml_content)
+    # print(sitemap_urls)
 
     # Link(from_page='asd', to_page='bsd').save()

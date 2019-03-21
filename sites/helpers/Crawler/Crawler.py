@@ -17,15 +17,16 @@ class Crawler:
         image_urls = []
         html_content_urls = []
 
-        # get url from frontier
-        # url = self.frontier.get_next_url()
+        # get url from frontier and PK for db entry
+        # url, primary_key = self.frontier.get_url()
         # current_url = 'http://127.0.0.1:8000'
-        current_url = 'http://google.si'
+        current_url = 'http://evem.gov.si'
 
         # init
         self.robotParser = RobotsParser(current_url)
 
         # HEAD request for URL ??
+        head_request = self.downloader.head(current_url)
 
         # check for robots.txt
         robots_file_exists = self.robotParser.parse_robots_file()
@@ -52,7 +53,7 @@ class Crawler:
             # sitemap obtained from robots.txt
             sitemap_xml = self.downloader.get_sitemap_for_url(sitemap_url)
         else:
-            sitemap_xml = self.downloader.get_sitemap_for_url(current_url)
+            sitemap_xml = self.downloader.get_sitemap_for_url(current_url, True)
 
         # Extract sitemap urls
         sitemap_urls = self.extractor.parse_sitemap(sitemap_xml)
@@ -78,12 +79,22 @@ class Crawler:
             image_urls = self.extractor.parse_img_urls(page_html_content, current_url)
             print("Image urls: ", image_urls)
 
-        all_urls = sitemap_urls + image_urls + html_content_urls
-        print("All urls: ", all_urls)
+        combined = sitemap_urls + image_urls + html_content_urls
+        print("All urls: ", combined)
 
+        # remove not allowed urls (check in robots.txt)
+        all_urls = []
+        if robots_file_exists:
+            for u in combined:
+                if self.robotParser.check_if_can_fetch(u):
+                    all_urls.append(u)
+
+        print("Allowed urls: ", all_urls)
         # add viable URLs to frontier
 
         # select new url
+
+        # dodajanje novih urljev v frontir -> new url and (current url || PK page entitete)
         pass
 
 

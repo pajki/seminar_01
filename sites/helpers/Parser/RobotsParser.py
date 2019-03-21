@@ -26,6 +26,7 @@ class RobotsParser:
         self.page_url = check_robots_url(url)
         self.content = None
         self.file_exists = False
+        self.status_code = 0
 
     def parse_robots_file(self):
         """
@@ -46,7 +47,8 @@ class RobotsParser:
 
             # sets the time the robots.txt file was last fetched to the current time.
             self.rp.modified()
-            self.file_exists = True
+            if self.status_code == 200:
+                self.file_exists = True
         except URLError as e:
             print("\nERROR\nMsg:\tCan't read robots file")
             print("URL:\t%s" % self.page_url)
@@ -94,7 +96,7 @@ class RobotsParser:
         """
         return self.rp.can_fetch(useragent=useragent, url=url)
 
-    def get_robots_content(self, encoding="utf-8"):
+    def get_robots_content2(self, encoding="utf-8"):
         """
         Download robots.txt content
         :param encoding: file encoding
@@ -115,14 +117,14 @@ class RobotsParser:
 
         return self.content
 
-    def get_robots_content2(self):
+    def get_robots_content(self):
         """
         Use downloader class to download robots content
         :return:
         """
         downloader = HttpDownloader()
-        self.content = downloader.get_robots_file(base_url=self.page_url)
-        return self.content
+        self.content, self.status_code = downloader.get_robots_file(base_url=self.page_url)
+        return self.content, self.status_code
 
     def check_for_sitemap_url(self):
         """
