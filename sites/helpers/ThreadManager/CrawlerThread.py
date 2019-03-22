@@ -1,4 +1,3 @@
-from random import randint
 from threading import Thread
 from time import sleep
 
@@ -22,5 +21,5 @@ class CrawlerThread(Thread):
         Start thread and start crawling.
         """
         print("Thread {} started.".format(self.thread_id))
-        sleep(randint(10, 20))
+        self.crawler.run()
         print("Thread {} ended.".format(self.thread_id))
