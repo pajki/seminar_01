@@ -1,5 +1,6 @@
 import requests
 from urllib.robotparser import RobotFileParser
+from sites.helpers.Utils.LoggerHelper import log
 
 
 class HttpDownloader:
@@ -17,9 +18,9 @@ class HttpDownloader:
         :return: response object
         """
         response = requests.head(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
-        print('status code:', response.status_code)
-        print('url:', response.url)
-        print('headers:', response.headers)
+        log('HttpDownloader|\tstatus code: %s' % response.status_code)
+        log('HttpDownloader|\turl: %s' % response.url)
+        log('HttpDownloader|\theaders: %s' % response.headers)
         return response
 
     def get(self, url):
@@ -37,16 +38,16 @@ class HttpDownloader:
         :param url:
         :return: Web page content
         """
-        print('\nGet page body for URL:', url)
+        log('HttpDownloader|\tGet page body for URL: %s' % url)
         response = requests.get(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
 
         # check status code
         # TODO handle error codes
         if response.status_code is 200:
-            print('Status code: ', response.status_code)
+            log('HttpDownloader|\tStatus code: %s' % response.status_code)
             return response.text, response.status_code
         else:
-            print('Status code: ', response.status_code)
+            log('HttpDownloader|\tStatus code: %s' % response.status_code)
             return None, response.status_code
 
     def get_sitemap_for_url(self, base_url, append_file_name=False):
@@ -60,10 +61,10 @@ class HttpDownloader:
         if append_file_name:
             path += '/sitemap.xml'
 
-        print('GET sitemap.xml for %s' % path)
+        log('HttpDownloader|\tGET sitemap.xml for %s' % path)
         response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
         if response.status_code is not 200:
-            print('ERROR: sitemap.xml not found for %s' % path)
+            log('HttpDownloader|\tERROR: sitemap.xml not found for %s' % path)
             return None
         # got sitemap
         return response.text
@@ -79,14 +80,14 @@ class HttpDownloader:
         if append_file_name:
             path += '/robots.txt'
 
-        print('GET robots.txt for %s' % path)
+        log('HttpDownloader|\tGET robots.txt for %s' % path)
         try:
             response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
             if response.status_code is not 200:
-                print('ERROR: robots.txt not found for %s' % path)
+                log('HttpDownloader|\tERROR: robots.txt not found for %s' % path)
             return response.text, response.status_code
         except Exception as e:
-            print("ERR: %s" % e)
+            log("ERR: %s" % e)
 
         return None, None
 
@@ -101,11 +102,11 @@ if __name__ == "__main__":
 
     # simple tests
     body = downloader.get_page_body(url1)
-    # print(body)
+    # log(body)
 
     sitemap = downloader.get_sitemap_for_url('https://google.com', True)
-    print(sitemap)
+    # print(sitemap)
 
     robots = downloader.get_robots_file('http://www.najdi.si/robots.txt')
-    print(robots)
+    # print(robots)
 
