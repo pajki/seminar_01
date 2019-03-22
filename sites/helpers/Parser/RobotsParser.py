@@ -39,6 +39,7 @@ class RobotsParser:
 
         # set robots url to fetch
         self.rp.set_url(self.page_url)
+        print("setting url %s" % self.page_url)
 
         # request and read robots file
         try:
@@ -47,8 +48,8 @@ class RobotsParser:
 
             # sets the time the robots.txt file was last fetched to the current time.
             self.rp.modified()
-            if self.status_code == 200:
-                self.file_exists = True
+
+            self.file_exists = True
         except URLError as e:
             print("\nERROR\nMsg:\tCan't read robots file")
             print("URL:\t%s" % self.page_url)
@@ -68,8 +69,8 @@ class RobotsParser:
         crawl_delay = None
         try:
             crawl_delay = self.rp.crawl_delay(useragent=useragent)
-        except:
-            pass
+        except Exception as e:
+            print("ERR: get_crawl_delay:\n%s" % e)
         return crawl_delay
 
     def get_request_rate(self, useragent="*"):
@@ -82,8 +83,8 @@ class RobotsParser:
         request_rate = None
         try:
             request_rate = self.rp.request_rate(useragent=useragent)
-        except:
-            pass
+        except Exception as e:
+            print("ERR: get_request_rate:\n%s" % e)
         return request_rate
 
     def check_if_can_fetch(self, url, useragent="*"):
@@ -126,27 +127,30 @@ class RobotsParser:
         self.content, self.status_code = downloader.get_robots_file(base_url=self.page_url)
         return self.content, self.status_code
 
-    def check_for_sitemap_url(self):
+    def parse_sitemap_url_in_robots_file(self):
         """
-        Check if sitemap is defined in robots.txt file. If it exists return URL.
-        :return: Sitemap URL or None
+        Convert robots.txt file content to lowercase and extract sitemaps urls
+        :return:
         """
-        sitemap_url = None
-
         if self.content is None:
-            print("ERR: No robots content. Download it?")
-            return None
+            print("WARNING: No robots.txt content. Did we download it?")
+            return []
+        r_content = self.content.lower()
+        return [url.strip() for url in r_content.split("sitemap: ")[1:]]
 
-        if "Sitemap" in self.content:
-            sitemap_url = self.content.split('Sitemap: ')[1]
-        elif "sitemap" in self.content:
-            sitemap_url = self.content.split('sitemap: ')[1]
-        return sitemap_url
+    def set_robots_content(self, new_content):
+        """
+        If we have robots.txt content in database use this function to set it
+        :param new_content: robots content from database
+        :return:
+        """
+        self.content = new_content
+        self.status_code = 200
 
 
 if __name__ == "__main__":
     print("main RobotsParser")
-    local_url = "http://127.0.0.1:8000/robots.txt"
+    local_url = "http://127.0.0.1:8000"
     # init
     r = RobotsParser(local_url)
 
@@ -164,12 +168,8 @@ if __name__ == "__main__":
 
     # download robots content
     content = r.get_robots_content()
-    content2 = r.get_robots_content2()
-    print("Content is the same: ", (content == content2))
     # print(content)
 
     # check if sitemap url exists in robots.txt
-    s_url = r.check_for_sitemap_url()
+    s_url = r.parse_sitemap_url_in_robots_file()
     print("Sitemap url: %s" % s_url)
-
-

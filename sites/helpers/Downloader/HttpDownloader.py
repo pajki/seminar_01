@@ -80,12 +80,15 @@ class HttpDownloader:
             path += '/robots.txt'
 
         print('GET robots.txt for %s' % path)
-        response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
-        if response.status_code is not 200:
-            print('ERROR: robots.txt not found for %s' % path)
-            return None
-        # got robots.txt
-        return response.text, response.status_code
+        try:
+            response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
+            if response.status_code is not 200:
+                print('ERROR: robots.txt not found for %s' % path)
+            return response.text, response.status_code
+        except Exception as e:
+            print("ERR: %s" % e)
+
+        return None, None
 
 
 if __name__ == "__main__":
