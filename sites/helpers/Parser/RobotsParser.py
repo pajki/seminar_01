@@ -3,6 +3,7 @@ import urllib.robotparser as robotparser
 from urllib.error import *
 
 from sites.helpers.Downloader.HttpDownloader import HttpDownloader
+from sites.helpers.Utils.LoggerHelper import init_logger, log
 
 
 def check_robots_url(url):
@@ -21,12 +22,15 @@ def check_robots_url(url):
 
 
 class RobotsParser:
-    def __init__(self, url):
+    def __init__(self, url, debug=False):
         self.rp = robotparser.RobotFileParser()
         self.page_url = check_robots_url(url)
         self.content = None
         self.file_exists = False
         self.status_code = 0
+
+        if debug:
+            init_logger(debug)
 
     def parse_robots_file(self):
         """
@@ -38,14 +42,15 @@ class RobotsParser:
         self.file_exists = False
 
         # set robots url to fetch
+        log("RobotParser|\tSetting url %s for robot parser" % self.page_url)
         self.rp.set_url(self.page_url)
-        print("setting url %s" % self.page_url)
 
         # request and read robots file
         try:
+            log("RobotParser|\tReading robots file")
             # read file
             self.rp.read()
-
+            log("RobotParser|\tContent saved in robot parser")
             # sets the time the robots.txt file was last fetched to the current time.
             self.rp.modified()
 
@@ -69,6 +74,7 @@ class RobotsParser:
         crawl_delay = None
         try:
             crawl_delay = self.rp.crawl_delay(useragent=useragent)
+            log("RobotParser|\tCrawl delay is %s" % crawl_delay)
         except Exception as e:
             print("ERR: get_crawl_delay:\n%s" % e)
         return crawl_delay
@@ -83,6 +89,7 @@ class RobotsParser:
         request_rate = None
         try:
             request_rate = self.rp.request_rate(useragent=useragent)
+            log("RobotParser|\tRequest rate is %s" % request_rate)
         except Exception as e:
             print("ERR: get_request_rate:\n%s" % e)
         return request_rate
@@ -95,6 +102,7 @@ class RobotsParser:
         :param useragent: useragent -> defaults to *, leave it
         :return: Boolean
         """
+        log("RobotParser|\tChecking if can fetch %s" % url)
         return self.rp.can_fetch(useragent=useragent, url=url)
 
     def get_robots_content2(self, encoding="utf-8"):
@@ -123,8 +131,10 @@ class RobotsParser:
         Use downloader class to download robots content
         :return:
         """
+        log("RobotParser|\tPreparing to download robots.txt content")
         downloader = HttpDownloader()
         self.content, self.status_code = downloader.get_robots_file(base_url=self.page_url)
+        log("RobotParser|\tGET robots.txt status code %s" % self.status_code)
         return self.content, self.status_code
 
     def parse_sitemap_url_in_robots_file(self):
@@ -132,6 +142,7 @@ class RobotsParser:
         Convert robots.txt file content to lowercase and extract sitemaps urls
         :return:
         """
+        log("RobotParser|\tparsing robots.txt content for sitemap urls")
         if self.content is None:
             print("WARNING: No robots.txt content. Did we download it?")
             return []
@@ -144,15 +155,16 @@ class RobotsParser:
         :param new_content: robots content from database
         :return:
         """
+        log("RobotParser|\tSetting new content")
         self.content = new_content
         self.status_code = 200
 
 
 if __name__ == "__main__":
-    print("main RobotsParser")
+    print("main RobotsParser\n")
     local_url = "http://127.0.0.1:8000"
     # init
-    r = RobotsParser(local_url)
+    r = RobotsParser(local_url, True)
 
     # parse robots
     r_exists = r.parse_robots_file()
