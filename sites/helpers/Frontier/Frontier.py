@@ -1,4 +1,4 @@
-from queue import LifoQueue
+from queue import LifoQueue, Empty
 from urllib.parse import urldefrag, urlparse
 
 from sites.helpers.Downloader.HttpDownloader import HttpDownloader
@@ -8,16 +8,20 @@ from sites.models import Page, Link, Site, PageType
 
 class Frontier:
 
-    def __init__(self, http_downloader=HttpDownloader()):
+    def __init__(self, http_downloader=HttpDownloader(), gov_si_only=True):
         self.queue = LifoQueue()
         self.http_downloader = http_downloader
+        self.gov_si_only = gov_si_only
 
     def add_url(self, new_url, from_page):
         """
-        This function adds potentially new page to frontier and creates new empty page entry
+        This function adds potentially new page to frontier and creates new empty page entry with code "FRONTIER"
         :param new_url: full url of potentially new page (string) to be added to frontier
-        :param from_page: id of page which url was found on
-        :return: returns boolean value that indicates weather url was added to frontier
+        :type new_url: str
+        :param from_page: page that url was found on
+        :type from_page: Page
+        :return: value that indicates whether url was added to frontier
+        :rtype: bool
         """
 
         # Remove fragment and add http:// if no scheme in url
@@ -28,11 +32,15 @@ class Frontier:
         if Page.objects.filter(url=new_url).exists():
             return False
 
-        # TODO .gov.si check
         # TODO canonical check
         # TODO duplicate invhash check
 
         netloc = urlparse(new_url).netloc
+
+        if self.gov_si_only:
+            netloc_split = netloc.split(".")
+            if netloc_split[-2] != "gov" or netloc_split[-1] != "si":
+                return False
 
         # Create new site if it doesn't exist yet
         try:
@@ -58,5 +66,12 @@ class Frontier:
         return True
 
     def get_url(self):
-        # TODO
-        return
+        """
+        Fetches url from frontier
+        :return: Returns url from frontier and indicator whether frontier is empty
+        :rtype: (str, bool)
+        """
+        try:
+            return self.queue.get_nowait(), True
+        except Empty:
+            return "", False
