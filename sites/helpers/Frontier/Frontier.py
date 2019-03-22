@@ -12,8 +12,13 @@ class Frontier:
         self.queue = LifoQueue()
         self.http_downloader = http_downloader
         self.gov_si_only = gov_si_only
+        # Initial seed URLs
+        self.add_url("evem.gov.si")
+        self.add_url("e-uprava.gov.si")
+        self.add_url("podatki.gov.si")
+        self.add_url("e-prostor.gov.si")
 
-    def add_url(self, new_url, from_page):
+    def add_url(self, new_url, from_page=None):
         """
         This function adds potentially new page to frontier and creates new empty page entry with code "FRONTIER"
         :param new_url: full url of potentially new page (string) to be added to frontier
@@ -55,11 +60,13 @@ class Frontier:
         page = Page(url=new_url, site=site, page_type_code=page_type)
         page.save()
 
-        try:
-            link = Link(from_page=from_page, to_page=page)
-            link.save()
-        except ValueError:
-            print("ERR: from_page must be valid Page instance")
+        # Create link if valid from_page was given
+        if from_page:
+            try:
+                link = Link(from_page=from_page, to_page=page)
+                link.save()
+            except ValueError:
+                print("ERR: from_page must be valid Page instance")
 
         self.queue.put(page)
 
