@@ -8,7 +8,7 @@ from sites.models import Page, Link, Site, PageType
 
 class Frontier:
 
-    def __init__(self, http_downloader=HttpDownloader(), gov_si_only=True, initial_url_seed=None):
+    def __init__(self, http_downloader=HttpDownloader(), gov_si_only=True, initial_url_seed=[]):
         self.queue = LifoQueue()
         self.http_downloader = http_downloader
         self.gov_si_only = gov_si_only
@@ -80,3 +80,15 @@ class Frontier:
             return self.queue.get_nowait(), True
         except Empty:
             return None, False
+
+    def restore_frontier_from_db(self):
+        """
+        This function restores frontier from db after possible unexpected program fail
+        :return:
+        """
+        page_type = PageType.objects.get(code="FRONTIER")
+        q = Page.objects.filter(page_type_code=page_type)
+
+        for page in q:
+            self.queue.put(page)
+        pass
