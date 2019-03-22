@@ -8,15 +8,13 @@ from sites.models import Page, Link, Site, PageType
 
 class Frontier:
 
-    def __init__(self, http_downloader=HttpDownloader(), gov_si_only=True):
+    def __init__(self, http_downloader=HttpDownloader(), gov_si_only=True, initial_url_seed=[]):
         self.queue = LifoQueue()
         self.http_downloader = http_downloader
         self.gov_si_only = gov_si_only
         # Initial seed URLs
-        self.add_url("evem.gov.si")
-        self.add_url("e-uprava.gov.si")
-        self.add_url("podatki.gov.si")
-        self.add_url("e-prostor.gov.si")
+        for u in initial_url_seed:
+            self.add_url(u)
 
     def add_url(self, new_url, from_page=None):
         """
@@ -81,4 +79,16 @@ class Frontier:
         try:
             return self.queue.get_nowait(), True
         except Empty:
-            return "", False
+            return None, False
+
+    def restore_frontier_from_db(self):
+        """
+        This function restores frontier from db after possible unexpected program fail
+        :return:
+        """
+        page_type = PageType.objects.get(code="FRONTIER")
+        q = Page.objects.filter(page_type_code=page_type)
+
+        for page in q:
+            self.queue.put(page)
+        pass
