@@ -1,4 +1,5 @@
 from sites.helpers.ThreadManager.CrawlerThread import CrawlerThread
+from sites.helpers.Frontier.Frontier import Frontier
 
 
 class ThreadManager:
@@ -8,8 +9,7 @@ class ThreadManager:
         :param thread_num: number of threads to start.
         """
         self.thread_num = thread_num
-        # self.frontier = Frontier()
-        self.frontier = None
+        self.frontier = Frontier(initial_url_seed=["evem.gov.si/evem/drzavljani/zacetna.evem", "e-uprava.gov.si"])
 
     def run(self):
         """

@@ -10,104 +10,116 @@ class Crawler:
         self.downloader = HttpDownloader()
         self.extractor = Extractor()
         self.robotParser = None
-
-    def run(self):
         init_logger(True)
 
+    def run(self):
         log("---------------------------------------------------------------------------------------------")
         log("Running crawler")
-
-        # local vars
-        sitemap_url = None
-        image_urls = []
-        html_content_urls = []
-        sitemap_urls = []
-
-        # get url from frontier and PK for db entry
-        # url, primary_key = self.frontier.get_url()
-        # current_url = 'http://127.0.0.1:8000'
-        current_url = 'http://evem.gov.si'
-        log("Processing url: %s" % current_url)
-
-        # init
-        self.robotParser = RobotsParser(current_url)
-
-        # HEAD request for URL ??
-        log("\n[HEAD]")
-        head_request = self.downloader.head(current_url)
-
-
-        # check for robots.txt
-        log("\n[ROBOTS]")
-        robots_file_exists = self.robotParser.parse_robots_file()
-        log("Robots file exists: %s" % robots_file_exists)
-
-        if robots_file_exists:
-            # download robots content
-            self.robotParser.get_robots_content()
-
-            # check for sitemap
-            sitemap_url = self.robotParser.parse_sitemap_url_in_robots_file()
-            log("Found sitemap url %s" % sitemap_url)
-
-            # check request rate
-            request_rate = self.robotParser.get_request_rate()
-            log("request rate %s" % request_rate)
-
-            # check crawl delay
-            crawler_delay = self.robotParser.get_crawl_delay()
-            log("crawler delay %s" % crawler_delay)
-
-        # download sitemap content
-        log("\n[SITEMAP]")
-        if sitemap_url is not None:
-            # sitemap obtained from robots.txt
-            sitemap_xml = self.downloader.get_sitemap_for_url(sitemap_url)
-        else:
-            sitemap_xml = self.downloader.get_sitemap_for_url(current_url, True)
-
-        # Extract sitemap urls
-        sitemap_urls = self.extractor.parse_sitemap(sitemap_xml)
-        log("Sitemap urls: %s" % sitemap_urls)
-
-        # GET request for page content
-        log("\n[HTML parsing]")
-        page_html_content = self.downloader.get_page_body(current_url)
-        # print(page_html_content)
-        # TODO: handle error codes
-        if page_html_content is None:
-            # use headles browser
-            log("TODO: headless browser")
-        else:
-            # clean HTML
-            # page_html_content = self.extractor.clean_html(page_html_content)
-
-            # find all ULRs on page
-            # html_content_urls = self.extractor.parse_urls(page_html_content)
-            log("Html urls: %s" % html_content_urls)
-            # use headless browser if needed
-
-            # find images
-            #image_urls = self.extractor.parse_img_urls(page_html_content, current_url)
-            log("Image urls: %s" % image_urls)
-
-        combined = sitemap_urls + image_urls + html_content_urls
-        log("All urls: %s" % combined)
-
-        # remove not allowed urls (check in robots.txt)
+        # [GLOBALS]
+        robots_sitemap_urls = []
         all_urls = []
-        if robots_file_exists:
-            for u in combined:
-                if self.robotParser.check_if_can_fetch(u):
-                    all_urls.append(u)
+        crawl_delay = None
+        request_rate = None
 
-        log("Allowed urls: %s" % all_urls)
-        # add viable URLs to frontier
+        # [FRONTIER]
+        log("Getting element from frontier")
+        page, empty = self.frontier.get_url()
 
-        # select new url
+        if empty:
+            log("Frontier is empty %s" % empty)
+            # TODO: tell thread manager that frontier is empty -> put this instance to sleep
+            return empty
 
-        # dodajanje novih urljev v frontir -> new url and (current url || PK page entitete)
-        pass
+        if not empty:
+            current_url = page.url
+            log("Got obj from frontier %s" % current_url)
+
+            # [HTML]
+            log("\n[HTML]")
+            log("Downloading page HTML")
+            html_content, http_status_code = self.downloader.get_page_body(current_url)
+            # TODO: do we need to handle http status codes?
+
+            # clean html content
+            log("Cleaning HTML")
+            cleaned_html = self.extractor.clean_html(html_content)
+            # log("HTML content\n%s" % cleaned_html)
+
+            # parse URLs
+            log("Parsing URLs")
+            a_url = self.extractor.parse_urls(cleaned_html)
+            log("Extracted URLs from <a> tag %s" % a_url)
+            all_urls += self.extractor.parse_urls(cleaned_html)
+
+            # [IMAGE]
+            # log("\n[IMAGE]")
+            # TODO: extract all images from web page and save them to DB
+
+            # [ROBOTS]
+            log("\n[ROBOTS]")
+            # check if robots content exists in DB
+            robots_content = page.site.robots_content
+            if robots_content:
+                log("Handle robots.txt")
+                self.robotParser = RobotsParser(current_url)
+                self.robotParser.set_robots_content(robots_content)
+                self.robotParser.parse_robots_file()
+
+                # [SITEMAP EXTRACTION]
+                robots_sitemap_urls = self.robotParser.parse_sitemap_url_in_robots_file()
+                log("List of sitemaps in robots %s" % robots_sitemap_urls)
+
+                # [CRAWL DELAY] TODO: how do we handle this
+                crawl_delay = self.robotParser.get_crawl_delay()
+                if crawl_delay:
+                    log("Got crawl delay from robots %s" % crawl_delay)
+
+                # [REQUEST RATE] TODO: how do we handle this
+                request_rate = self.robotParser.get_request_rate()
+                if request_rate:
+                    log("Got request rate from robots %s" % request_rate)
+            else:
+                log("Robots not found")
+
+            # [SITEMAP]
+            log("\n[SITEMAP]")
+            # Check for defined sitemaps in robots.txt
+            for sitemap_url in robots_sitemap_urls:
+                log("Downloading sitemap for %s" % sitemap_url)
+                content = self.downloader.get_sitemap_for_url(sitemap_url)
+                s_urls = self.extractor.parse_sitemap(content)
+                log("Appending sitemap urls to all urls %s" % s_urls)
+                all_urls += s_urls
+
+            # Check if sitemap exists in DB
+            sitemap_content = page.site.sitemap_content
+            if sitemap_content:
+                sitemap_urls = self.extractor.parse_sitemap(sitemap_content)
+                log("Parsed sitemap from DB, found %s" % sitemap_urls)
+            else:
+                log("Sitemap not found")
+
+            # [URL]
+            log("\n[URL]")
+            log("Extracted %d urls" % len(all_urls))
+            # TODO: our extractor extracts data from html. Not all URLs are in correct format. We need to handle those.
+            # TODO: write URL helper class to handle urls
+
+            # remove disallowed urls (check in robots.txt)
+            if robots_content:
+                log("Removing disallowed URLs")
+                for u in all_urls:
+                    if self.robotParser.check_if_can_fetch(u):
+                        all_urls.append(u)
+
+            # [EXTRACT additional data types -> PDF, etc.]
+            # TODO extract additional documents and save them to DB
+
+            # [SAVE DATA TO DB]
+
+            # [UPDATE FRONTIER]
+
+            # [GET NEW URL from FRONTIER]
 
 
 if __name__ == "__main__":
