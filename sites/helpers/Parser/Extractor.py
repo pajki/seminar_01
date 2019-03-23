@@ -61,7 +61,7 @@ class Extractor:
         bs = BeautifulSoup(xml)
         sitemap_tags = bs.find_all("sitemap")
 
-        log("The number of sitemaps are {0}".format(len(sitemap_tags)))
+        log("Extractor|\tThe number of sitemaps are {0}".format(len(sitemap_tags)))
 
         # return [sitemap.findNext('loc').text for sitemap in sitemap_tags]
         for sitemap in sitemap_tags:
