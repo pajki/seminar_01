@@ -16,6 +16,9 @@ class Frontier:
         for u in initial_url_seed:
             self.add_url(u)
 
+        # restore data from DB on init
+        self.restore_frontier_from_db()
+
     def add_url(self, new_url, from_page=None):
         """
         This function adds potentially new page to frontier and creates new empty page entry with code "FRONTIER"
@@ -40,6 +43,7 @@ class Frontier:
 
         netloc = urlparse(new_url).netloc
 
+        # TODO maybe check if url string contains gov.si instead of splitting to arr (might have problem with index)
         if self.gov_si_only:
             netloc_split = netloc.split(".")
             if netloc_split[-2] != "gov" or netloc_split[-1] != "si":
@@ -49,9 +53,11 @@ class Frontier:
         try:
             site = Site.objects.get(domain=netloc)
         except Site.DoesNotExist:
-            site = Site(domain=netloc,
-                        sitemap_content=self.http_downloader.get_sitemap_for_url("http://" + netloc, True),
-                        robots_content=self.http_downloader.get_robots_file("http://" + netloc, True))
+            # Download robots and sitemap
+            sitemap_content, _ = self.http_downloader.get_sitemap_for_url("http://" + netloc, True)
+            robots_content, _ = self.http_downloader.get_robots_file("http://" + netloc, True)
+            # Save new site
+            site = Site(domain=netloc, sitemap_content=sitemap_content, robots_content=robots_content)
             site.save()
 
         page_type = PageType.objects.get(code="FRONTIER")
@@ -77,9 +83,9 @@ class Frontier:
         :rtype: (str, bool)
         """
         try:
-            return self.queue.get_nowait(), True
+            return self.queue.get_nowait(), False
         except Empty:
-            return None, False
+            return None, True
 
     def restore_frontier_from_db(self):
         """
