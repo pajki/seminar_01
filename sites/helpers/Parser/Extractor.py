@@ -1,14 +1,12 @@
 from bs4 import BeautifulSoup
-# from sites.models import Link
-
-# Custom classes
-from sites.helpers.Downloader.HttpDownloader import HttpDownloader
-
+from sites.helpers.Utils.LoggerHelper import log
 
 class Extractor:
     """
-    This class is used to extract data from different sources
+    This class is used to extract data from different sources.
+    Extracted data is unmodified. List of urls that is returned must be validated (to append domain url,...)
     """
+
     def __init__(self):
         pass
 
@@ -20,39 +18,33 @@ class Extractor:
         :param html_content: html content to clean
         :return: cleaned content
         """
-        tree = BeautifulSoup(html_content)
-        return tree.prettify()
+        soup = BeautifulSoup(html_content, 'lxml')
+        return soup.prettify()
 
     def parse_urls(self, html_content):
         """
-        TODO add base url if missing
         This function extracts all urls from html
         :param html_content: html content to parse
         :return: array of URLs
         """
-        bs = BeautifulSoup(html_content)
+        bs = BeautifulSoup(html_content, "lxml")
         urls = []
 
         for url in bs.find_all('a', href=True):
-            # print("Found the URL:", url['href'])
             urls.append(url['href'])
-
         return urls
 
-    def parse_img_urls(self, html_content, base_url):
+    def parse_img_urls(self, html_content):
         """
-        TODO: use correct base_url -> probably need to make HEAD request and use origin url from request
         This function extracts all img urls from html
         :param html_content: html content to parse
         :return: array of img URLs
         """
-        bs = BeautifulSoup(html_content)
+        bs = BeautifulSoup(html_content, 'lxml')
         urls = []
 
         for img in bs.find_all('img'):
-            url = base_url + img['src']
-            # print("Found image URL:", url)
-            urls.append(url)
+            urls.append(img['src'])
         return urls
 
     def parse_sitemap(self, xml):
@@ -69,7 +61,7 @@ class Extractor:
         bs = BeautifulSoup(xml)
         sitemap_tags = bs.find_all("sitemap")
 
-        print("The number of sitemaps are {0}".format(len(sitemap_tags)))
+        log("Extractor|\tThe number of sitemaps are {0}".format(len(sitemap_tags)))
 
         # return [sitemap.findNext('loc').text for sitemap in sitemap_tags]
         for sitemap in sitemap_tags:
@@ -81,26 +73,31 @@ class Extractor:
 
 
 if __name__ == "__main__":
-    # url samples
-    # django test page
-    url1 = 'http://127.0.0.1:8000'
-    url2 = 'https://www.google.si'
-
-    # Init classes
+    # Init class
     e = Extractor()
-    d = HttpDownloader()
 
-    # Test url parser
-    content = d.get_page_body(url1)
-    e.parse_urls(content)
+    html_doc = """
+    <html><head><title>The Dormouse's story</title></head>
+    <body>
+    <p class="title"><b>The Dormouse's story</b></p>
+    
+    <p class="story">Once upon a time there were three little sisters; and their names were
+    <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
+    <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
+    <a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
+    and they lived at the bottom of a well.</p>
+    
+    <p class="story">...</p><span>đčšžćčđščžćšč
+    
+    <img src="www.ful-dobra-slika.tmp" />
+    
+    """
 
-    # get google landing page and parse img
-    content2 = d.get_page_body(url2)
-    e.parse_img_urls(content2, url2)
+    clean_html = e.clean_html(html_doc)
+    # print(clean_html)
 
-    # Test sitemap parser
-    xml_content = d.get_sitemap_for_url(url1, True)
-    sitemap_urls = e.parse_sitemap(xml_content)
-    print(sitemap_urls)
+    a = e.parse_urls(clean_html)
+    print(a)
 
-    # Link(from_page='asd', to_page='bsd').save()
+    img_url = e.parse_img_urls(clean_html)
+    print(img_url)
