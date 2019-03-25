@@ -155,10 +155,13 @@ LOGGING = {
     'loggers': {
         '': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
         },
     }
 }
+
+# Crawler thread settings
+CRAWLER_THREAD_TIMEOUT = 60
 
 
 # Import local settings

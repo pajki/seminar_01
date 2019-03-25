@@ -8,6 +8,7 @@ from sites.models import Page, Link, Site, PageType
 
 logger = getLogger(__name__)
 
+
 class Frontier:
 
     def __init__(self, http_downloader=HttpDownloader(), gov_si_only=True, initial_url_seed=[]):
@@ -19,7 +20,7 @@ class Frontier:
             self.add_url(u)
 
         # restore data from DB on init
-        self.restore_frontier_from_db()
+        # self.restore_frontier_from_db()
 
     def add_url(self, new_url, from_page=None):
         """
@@ -31,7 +32,6 @@ class Frontier:
         :return: value that indicates whether url was added to frontier
         :rtype: bool
         """
-
         # Remove fragment and add http:// if no scheme in url
         new_url = urldefrag(new_url).url
         if not urlparse(new_url).scheme:
