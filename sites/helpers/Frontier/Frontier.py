@@ -1,3 +1,4 @@
+from logging import getLogger
 from queue import LifoQueue, Empty
 from urllib.parse import urldefrag, urlparse
 
@@ -5,6 +6,7 @@ from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 
 from sites.models import Page, Link, Site, PageType
 
+logger = getLogger(__name__)
 
 class Frontier:
 
@@ -70,7 +72,7 @@ class Frontier:
                 link = Link(from_page=from_page, to_page=page)
                 link.save()
             except ValueError:
-                print("ERR: from_page must be valid Page instance")
+                logger.error("from_page must be valid Page instance")
 
         self.queue.put(page)
 
