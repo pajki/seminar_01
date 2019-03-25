@@ -1,5 +1,9 @@
+from logging import getLogger
+
 from sites.helpers.ThreadManager.CrawlerThread import CrawlerThread
 from sites.helpers.Frontier.Frontier import Frontier
+
+logger = getLogger(__name__)
 
 
 class ThreadManager:
@@ -15,6 +19,7 @@ class ThreadManager:
         """
         Start self.thread_num of threads.
         """
+        logger.info("Initializing threads...")
         for i in range(0, self.thread_num):
             crawler_thread = CrawlerThread(i, self.frontier)
             crawler_thread.start()

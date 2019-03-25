@@ -1,7 +1,9 @@
+from logging import getLogger
 from threading import Thread
-from time import sleep
 
 from sites.helpers.Crawler.Crawler import Crawler
+
+logger = getLogger(__name__)
 
 
 class CrawlerThread(Thread):
@@ -11,7 +13,7 @@ class CrawlerThread(Thread):
         :param thread_id: id of the thread
         :param frontier: reference to the frontier objects
         """
-        print("Crawler thread {} initialized.".format(thread_id))
+        logger.info("Crawler thread {} initialized.".format(thread_id))
         Thread.__init__(self)
         self.thread_id = thread_id
         self.crawler = Crawler(frontier)
@@ -20,6 +22,6 @@ class CrawlerThread(Thread):
         """
         Start thread and start crawling.
         """
-        print("Thread {} started.".format(self.thread_id))
+        logger.info("Thread {} started.".format(self.thread_id))
         self.crawler.run()
-        print("Thread {} ended.".format(self.thread_id))
+        logger.info("Thread {} ended.".format(self.thread_id))
