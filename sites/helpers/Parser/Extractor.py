@@ -1,8 +1,9 @@
+import re
 from logging import getLogger
-
 from bs4 import BeautifulSoup
 
 logger = getLogger(__name__)
+
 
 class Extractor:
     """
@@ -22,6 +23,7 @@ class Extractor:
         :return: cleaned content
         """
         soup = BeautifulSoup(html_content, 'lxml')
+        logger.info("Extractor|\tCleaning html")
         return soup.prettify()
 
     def parse_urls(self, html_content):
@@ -33,8 +35,21 @@ class Extractor:
         bs = BeautifulSoup(html_content, "lxml")
         urls = []
 
-        for url in bs.find_all('a', href=True):
-            urls.append(url['href'])
+        logger.info("Extractor|\tParsing urls from <a/>")
+        # extract url from <a href={url} />
+        urls += [url['href'] for url in bs.find_all('a', href=True)]
+
+        logger.info("Extractor|\tParsing urls from location api")
+        # extract url fromjs navigation API
+        regex = r"location.assign\((.*)\)|location.replace\((.*)\)|location\.href\=\"(.*)\"|location\.href\=\'(.*)\'"
+        matches = re.finditer(regex, html_content, re.MULTILINE)
+        # black magic
+        for matchNum, match in enumerate(matches, start=1):
+            for groupNum in range(0, len(match.groups())):
+                groupNum = groupNum + 1
+                if match.group(groupNum):
+                    urls.append(match.group(groupNum))
+        logger.info("Extractor|\tFound %d" % len(urls))
         return urls
 
     def parse_img_urls(self, html_content):
@@ -45,7 +60,7 @@ class Extractor:
         """
         bs = BeautifulSoup(html_content, 'lxml')
         urls = []
-
+        logger.info("Extractor|\tParsing urls from <img>")
         for img in bs.find_all('img'):
             urls.append(img['src'])
         return urls
@@ -74,33 +89,58 @@ class Extractor:
             urls.append(url)
         return urls
 
+    def parse_files(self, html):
+        """
+        Extract files from html with regex expression
+        :param html:
+        :return:
+        """
+        logger.info("Extractor|\tParsing urls for files")
+        files = re.findall('href="(.*pdf|.*doc|.*docx|.*ppt|.*pptx)"', html)
+        return files
+
 
 if __name__ == "__main__":
     # Init class
     e = Extractor()
 
     html_doc = """
-    <html><head><title>The Dormouse's story</title></head>
-    <body>
-    <p class="title"><b>The Dormouse's story</b></p>
+        <html><head><title>The Dormouse's story</title></head>
+        <body>
+        <p class="title"><b>The Dormouse's story</b></p>
+        
+        <p class="story">Once upon a time there were three little sisters; and their names were
+        <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
+        <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
+        <a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
+        and they lived at the bottom of a well.</p>
+        
+        <p class="story">...</p><span>đčšžćčđščžćšč
+        
+        <img src="/img/moja-slika.jpg" />
+        <a href="/img/moja-slika.pdf" />
     
-    <p class="story">Once upon a time there were three little sisters; and their names were
-    <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
-    <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
-    <a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
-    and they lived at the bottom of a well.</p>
-    
-    <p class="story">...</p><span>đčšžćčđščžćšč
-    
-    <img src="www.ful-dobra-slika.tmp" />
-    
+        <script>location.href="wwww.ful-dober-link-1.com"</script>
+        <script>location.replace("wwww.ful-dober-link-2.com")</script>
+        <script>location.assign("wwww.ful-dober-link-3.com")</script>
+        
+        <input type="button" onClick=location.assign("wwww.ful-dober-link-4.com")>click me</input>
+        <script>location.href='wwww.ful-dober-link-5.com'</script>
+        asd
+        asea
+        sd
+        dsa
+        d
+        <p>asjdoiasdjhaso</p>
     """
 
     clean_html = e.clean_html(html_doc)
-    # logger.info(clean_html)
+    # print(clean_html)
 
-    a = e.parse_urls(clean_html)
-    logger.info(a)
+    a_url = e.parse_urls(clean_html)
+    print(a_url)
 
     img_url = e.parse_img_urls(clean_html)
-    logger.info(img_url)
+    print(img_url)
+
+    print(e.parse_files(clean_html))
