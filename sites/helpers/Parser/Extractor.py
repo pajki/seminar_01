@@ -1,6 +1,9 @@
 import re
+from logging import getLogger
+
 from bs4 import BeautifulSoup
-from sites.helpers.Utils.LoggerHelper import log
+
+logger = getLogger(__name__)
 
 
 class Extractor:
@@ -74,13 +77,13 @@ class Extractor:
         bs = BeautifulSoup(xml)
         sitemap_tags = bs.find_all("sitemap")
 
-        log("Extractor|\tThe number of sitemaps are {0}".format(len(sitemap_tags)))
+        logger.info("Extractor|\tThe number of sitemaps are {0}".format(len(sitemap_tags)))
 
         # return [sitemap.findNext('loc').text for sitemap in sitemap_tags]
         for sitemap in sitemap_tags:
             # find next url in sitemap
             url = sitemap.findNext("loc").text
-            # print(url)
+            # logger.info(url)
             urls.append(url)
         return urls
 
