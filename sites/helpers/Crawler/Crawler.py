@@ -1,8 +1,9 @@
 from logging import getLogger
-
+from datetime import datetime
 from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 from sites.helpers.Parser.RobotsParser import RobotsParser
 from sites.helpers.Parser.Extractor import Extractor
+from sites.models import PageType
 
 logger = getLogger(__name__)
 
@@ -13,6 +14,28 @@ class Crawler:
         self.downloader = HttpDownloader()
         self.extractor = Extractor()
         self.robotParser = None
+
+    def save_to_db(self, page, http_code, html_content):
+        page_type = PageType.objects.get(code="HTML")
+        page.page_type_code = page_type
+        page.http_status_code = http_code
+        page.html_content = html_content
+        page.accessed_time = datetime.now()
+        page.save()
+
+    def save_img_url_to_db(self):
+        """
+        # TODO
+        :return:
+        """
+        pass
+
+    def save_document_to_db(self):
+        """
+        # TODO
+        :return:
+        """
+        pass
 
     def run(self):
         logger.info("---------------------------------------------------------------------------------------------")
@@ -37,7 +60,7 @@ class Crawler:
             logger.info("Got obj from frontier %s" % current_url)
 
             # [HTML]
-            logger.info("\n[HTML]")
+            logger.info("[HTML]")
             logger.info("Downloading page HTML")
             html_content, http_status_code = self.downloader.get_page_body(current_url)
             # TODO: do we need to handle http status codes?
@@ -54,11 +77,17 @@ class Crawler:
             all_urls += self.extractor.parse_urls(cleaned_html)
 
             # [IMAGE]
-            # logger.info("\n[IMAGE]")
-            # TODO: extract all images from web page and save them to DB
+            logger.info("[IMAGE]")
+            # TODO: fix extracted URLs & save extracted images to DB
+            image_urls = self.extractor.parse_img_urls(cleaned_html)
+
+            # [EXTRACT additional data types -> PDF, etc.]
+            logger.info("[FILES]")
+            # TODO extract additional documents and save them to DB
+            document_urls = self.extractor.parse_files(cleaned_html)
 
             # [ROBOTS]
-            logger.info("\n[ROBOTS]")
+            logger.info("[ROBOTS]")
             # check if robots content exists in DB
             robots_content = page.site.robots_content
             if robots_content:
@@ -80,11 +109,16 @@ class Crawler:
                 request_rate = self.robotParser.get_request_rate()
                 if request_rate:
                     logger.info("Got request rate from robots %s" % request_rate)
+
+                # HOW TO HANDLE REQUEST RATE AND CRAWL DELAY
+                """
+                In page table we have accessed time attr. Use that time to determine if we can crawl this page
+                """
             else:
                 logger.info("Robots not found")
 
             # [SITEMAP]
-            logger.info("\n[SITEMAP]")
+            logger.info("[SITEMAP]")
             # Check for defined sitemaps in robots.txt
             for sitemap_url in robots_sitemap_urls:
                 logger.info("Downloading sitemap for %s" % sitemap_url)
@@ -102,24 +136,34 @@ class Crawler:
                 logger.info("Sitemap not found")
 
             # [URL]
-            logger.info("\n[URL]")
+            logger.info("[URL]")
             logger.info("Extracted %d urls" % len(all_urls))
             # TODO: our extractor extracts data from html. Not all URLs are in correct format. We need to handle those.
             # TODO: write URL helper class to handle urls
 
             # remove disallowed urls (check in robots.txt)
+            filtered_urls = []
             if robots_content:
                 logger.info("Removing disallowed URLs")
                 for u in all_urls:
                     if self.robotParser.check_if_can_fetch(u):
-                        all_urls.append(u)
-
-            # [EXTRACT additional data types -> PDF, etc.]
-            # TODO extract additional documents and save them to DB
+                        filtered_urls.append(u)
 
             # [SAVE DATA TO DB]
+            logger.info("[DATABASE]")
+            # update page entry
+            logger.info("saving page")
+            self.save_to_db(page, http_status_code, cleaned_html)
+            # save images
+            logger.info("saving img")
+            self.save_img_url_to_db()
+            # save additional documents
+            logger.info("saving documents")
+            self.save_document_to_db()
 
             # [UPDATE FRONTIER]
+            for u in filtered_urls:
+                self.frontier.add_url(new_url=u, from_page=current_url)
 
             # [GET NEW URL from FRONTIER]
 
