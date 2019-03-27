@@ -3,17 +3,16 @@ from queue import LifoQueue, Empty
 from urllib.parse import urldefrag, urlparse
 
 from sites.helpers.Downloader.HttpDownloader import HttpDownloader
-
 from sites.models import Page, Link, Site, PageType
 
 logger = getLogger(__name__)
 
+
 class Frontier:
 
-    def __init__(self, http_downloader=HttpDownloader(), gov_si_only=True, initial_url_seed=[]):
+    def __init__(self, http_downloader=HttpDownloader(), initial_url_seed=[]):
         self.queue = LifoQueue()
         self.http_downloader = http_downloader
-        self.gov_si_only = gov_si_only
         # Initial seed URLs
         for u in initial_url_seed:
             self.add_url(u)
@@ -32,24 +31,10 @@ class Frontier:
         :rtype: bool
         """
 
-        # Remove fragment and add http:// if no scheme in url
-        new_url = urldefrag(new_url).url
-        if not urlparse(new_url).scheme:
-            new_url = "http://" + new_url
-
         if Page.objects.filter(url=new_url).exists():
             return False
 
-        # TODO canonical check
-        # TODO duplicate invhash check
-
         netloc = urlparse(new_url).netloc
-
-        # TODO maybe check if url string contains gov.si instead of splitting to arr (might have problem with index)
-        if self.gov_si_only:
-            netloc_split = netloc.split(".")
-            if netloc_split[-2] != "gov" or netloc_split[-1] != "si":
-                return False
 
         # Create new site if it doesn't exist yet
         try:
