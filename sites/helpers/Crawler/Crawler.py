@@ -10,7 +10,7 @@ logger = getLogger(__name__)
 class Crawler:
     def __init__(self, frontier):
         self.frontier = frontier
-        self.downloader = HttpDownloader()
+        self.downloader = HttpDownloader(allow_redirects=False)
         self.extractor = Extractor()
         self.robotParser = None
 
@@ -50,7 +50,7 @@ class Crawler:
             # parse URLs
             logger.info("Parsing URLs")
             a_url = self.extractor.parse_urls(cleaned_html)
-            logger.info("Extracted URLs from <a> tag %s" % a_url)
+            logger.debug("Extracted URLs from <a> tag %s" % a_url)
             all_urls += self.extractor.parse_urls(cleaned_html)
 
             # [IMAGE]
