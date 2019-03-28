@@ -1,6 +1,6 @@
 from logging import getLogger
-from datetime import datetime
 from time import sleep
+from django.utils import timezone
 from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 from sites.helpers.Parser.RobotsParser import RobotsParser
 from sites.helpers.Parser.Extractor import Extractor
@@ -8,6 +8,8 @@ from sites.models import PageType
 from sites.helpers.Crawler.UrlUtils import url_fix_relative
 
 logger = getLogger(__name__)
+
+DEFAULT_CRAWL_DELAY = 4
 
 
 class Crawler:
@@ -30,7 +32,7 @@ class Crawler:
         page.page_type_code = PageType.objects.get(code="HTML")
         page.http_status_code = http_code
         page.html_content = html_content
-        page.accessed_time = datetime.now()
+        page.accessed_time = timezone.now()
         page.save()
 
     def save_img_url_to_db(self):
@@ -183,10 +185,14 @@ class Crawler:
 
             print("Crawled: {}, current url: {}".format(len(filtered_urls), current_url))
 
-            # [GET NEW URL from FRONTIER]
+            # [CRAWL DELAY]
             logger.info("Waiting crawl delay %s for %s" % (crawl_delay, current_url))
-            # wait crawl delay
-            sleep(crawl_delay)
+            if crawl_delay:
+                sleep(crawl_delay)
+            else:
+                sleep(DEFAULT_CRAWL_DELAY)
+
+            # [GET NEW URL from FRONTIER]
             self.run()
 
 
