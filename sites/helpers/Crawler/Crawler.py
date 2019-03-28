@@ -9,11 +9,12 @@ logger = getLogger(__name__)
 
 
 class Crawler:
-    def __init__(self, frontier):
+    def __init__(self, frontier, add_url_lock):
         self.frontier = frontier
         self.downloader = HttpDownloader(allow_redirects=False)
         self.extractor = Extractor()
         self.robotParser = None
+        self.add_url_lock = add_url_lock
 
     def run(self):
         logger.info("---------------------------------------------------------------------------------------------")
@@ -117,10 +118,14 @@ class Crawler:
             else:
                 filtered_urls = all_urls
 
+            self.add_url_lock.acquire()
             for u in filtered_urls:
                 tmp_url = url_fix_relative(u, current_url)
                 if tmp_url:
                     self.frontier.add_url(from_page=page, new_url=tmp_url)
+            self.add_url_lock.release()
+
+            print("Crawled: {}, current url: {}".format(len(filtered_urls), current_url))
 
             # [EXTRACT additional data types -> PDF, etc.]
             # TODO extract additional documents and save them to DB

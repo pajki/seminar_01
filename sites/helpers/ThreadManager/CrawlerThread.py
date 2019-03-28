@@ -11,7 +11,7 @@ logger = getLogger(__name__)
 
 class CrawlerThread(Thread):
 
-    def __init__(self, thread_id, frontier):
+    def __init__(self, thread_id, frontier, add_url_lock):
         """
         :param thread_id: id of the thread
         :param frontier: reference to the frontier objects
@@ -19,7 +19,7 @@ class CrawlerThread(Thread):
         logger.info("Crawler thread {} initialized.".format(thread_id))
         Thread.__init__(self)
         self.thread_id = thread_id
-        self.crawler = Crawler(frontier)
+        self.crawler = Crawler(frontier, add_url_lock)
         self.asleep = False
         self.kill = False
 

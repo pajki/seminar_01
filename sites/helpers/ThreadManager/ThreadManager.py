@@ -1,6 +1,7 @@
 from logging import getLogger
 from random import randint
 from time import sleep
+from threading import Lock
 
 from django.conf import settings
 
@@ -19,7 +20,7 @@ class ThreadManager:
         self.threads = []
         self.thread_num = thread_num
         self.frontier = Frontier(initial_url_seed=["http://evem.gov.si/evem/drzavljani/zacetna.evem", "http://e-uprava.gov.si"])
-        # self.frontier = Frontier(initial_url_seed=["evem.gov.si/"], )
+        self.url_add_lock = Lock()
 
     def run(self):
         """
@@ -27,7 +28,7 @@ class ThreadManager:
         """
         logger.info("Initializing threads...")
         for i in range(0, self.thread_num):
-            crawler_thread = CrawlerThread(i, self.frontier)
+            crawler_thread = CrawlerThread(i, self.frontier, self.url_add_lock)
             crawler_thread.start()
             self.threads.append(crawler_thread)
         logger.info("Threads initialized.")
