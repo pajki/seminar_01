@@ -31,18 +31,29 @@ class CrawlerThread(Thread):
         logger.info("Thread {} started.".format(self.thread_id))
 
         while True:
-            self.crawler.run()
+            try:
+                result = self.crawler.run()
+            except Exception as e:
+                logger.info("Error occurred while running a crawler instance.")
+                logger.error(e)
+                logger.info("Restarting the crawler thread...")
+                continue
 
-            logger.info("No new URLS, thread {} sleeping for {} seconds.".format(
-                self.thread_id, settings.CRAWLER_THREAD_TIMEOUT
-            ))
-
-            self.asleep = True
-            sleep(settings.CRAWLER_THREAD_TIMEOUT)
-            self.asleep = False
+            # If kill attribute was set to True, return from thread
             if self.kill:
                 logger.info("Killing thread {}".format(self.thread_id))
                 return 420
+            # If we got an URL as a result, continue with the crawling
+            if result:
+                continue
+
+            # If the result we received was None, the frontier is empty - go to sleep and then resume
+            logger.info("No new URLS, thread {} sleeping for {} seconds.".format(
+                self.thread_id, settings.CRAWLER_THREAD_TIMEOUT
+            ))
+            self.asleep = True
+            sleep(settings.CRAWLER_THREAD_TIMEOUT)
+            self.asleep = False
             logger.info("Thread {} resuming.".format(self.thread_id))
 
     def is_sleeping(self):
