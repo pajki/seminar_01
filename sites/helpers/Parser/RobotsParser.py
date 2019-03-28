@@ -100,7 +100,7 @@ class RobotsParser:
         :param useragent: useragent -> defaults to *, leave it
         :return: Boolean
         """
-        logger.info("RobotParser|\tChecking if can fetch %s" % url)
+        logger.debug("RobotParser|\tChecking if can fetch %s" % url)
         return self.rp.can_fetch(useragent=useragent, url=url)
 
     def get_robots_content2(self, encoding="utf-8"):

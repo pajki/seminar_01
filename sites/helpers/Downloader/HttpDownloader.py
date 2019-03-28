@@ -5,6 +5,7 @@ from urllib.robotparser import RobotFileParser
 
 logger = getLogger(__name__)
 
+
 class HttpDownloader:
     """
     This class provides methods for downloading different files/content.

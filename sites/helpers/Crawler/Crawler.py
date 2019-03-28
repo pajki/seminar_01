@@ -4,16 +4,18 @@ from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 from sites.helpers.Parser.RobotsParser import RobotsParser
 from sites.helpers.Parser.Extractor import Extractor
 from sites.models import PageType
+from sites.helpers.Crawler.UrlUtils import url_fix_relative
 
 logger = getLogger(__name__)
 
 
 class Crawler:
-    def __init__(self, frontier):
+    def __init__(self, frontier, add_url_lock):
         self.frontier = frontier
-        self.downloader = HttpDownloader()
+        self.downloader = HttpDownloader(allow_redirects=False)
         self.extractor = Extractor()
         self.robotParser = None
+        self.add_url_lock = add_url_lock
 
     def save_to_db(self, page, http_code, html_content):
         page_type = PageType.objects.get(code="HTML")
@@ -72,8 +74,6 @@ class Crawler:
 
             # parse URLs
             logger.info("Parsing URLs")
-            a_url = self.extractor.parse_urls(cleaned_html)
-            logger.info("Extracted URLs from <a> tag %s" % a_url)
             all_urls += self.extractor.parse_urls(cleaned_html)
 
             # [IMAGE]
@@ -132,6 +132,7 @@ class Crawler:
             if sitemap_content:
                 sitemap_urls = self.extractor.parse_sitemap(sitemap_content)
                 logger.info("Parsed sitemap from DB, found %s" % sitemap_urls)
+                all_urls += sitemap_content
             else:
                 logger.info("Sitemap not found")
 
@@ -148,6 +149,20 @@ class Crawler:
                 for u in all_urls:
                     if self.robotParser.check_if_can_fetch(u):
                         filtered_urls.append(u)
+            else:
+                filtered_urls = all_urls
+
+            self.add_url_lock.acquire()
+            for u in filtered_urls:
+                tmp_url = url_fix_relative(u, current_url)
+                if tmp_url:
+                    self.frontier.add_url(from_page=page, new_url=tmp_url)
+            self.add_url_lock.release()
+
+            print("Crawled: {}, current url: {}".format(len(filtered_urls), current_url))
+
+            # [EXTRACT additional data types -> PDF, etc.]
+            # TODO extract additional documents and save them to DB
 
             # [SAVE DATA TO DB]
             logger.info("[DATABASE]")
@@ -166,6 +181,7 @@ class Crawler:
                 self.frontier.add_url(new_url=u, from_page=current_url)
 
             # [GET NEW URL from FRONTIER]
+            self.run()
 
 
 if __name__ == "__main__":
