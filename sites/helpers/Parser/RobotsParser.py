@@ -75,6 +75,9 @@ class RobotsParser:
             logger.info("RobotParser|\tCrawl delay is %s" % crawl_delay)
         except Exception as e:
             logger.error("get_crawl_delay:\n%s" % e)
+
+        if not crawl_delay:
+            return 4
         return crawl_delay
 
     def get_request_rate(self, useragent="*"):
