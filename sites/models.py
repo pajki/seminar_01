@@ -42,6 +42,7 @@ class Page(models.Model):
     html_content = models.TextField(blank=True, null=True)
     http_status_code = models.IntegerField(blank=True, null=True)
     accessed_time = models.DateTimeField(blank=True, null=True)
+    crawl_delay = models.IntegerField(default=4)
 
     class Meta:
         db_table = 'page'

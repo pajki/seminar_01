@@ -1,6 +1,6 @@
 from logging import getLogger
 from queue import Queue, Empty
-from urllib.parse import urldefrag, urlparse
+from urllib.parse import urlparse
 
 from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 from sites.models import Page, Link, Site, PageType
@@ -20,9 +20,10 @@ class Frontier:
         # restore data from DB on init
         self.restore_frontier_from_db()
 
-    def add_url(self, new_url, from_page=None):
+    def add_url(self, new_url, from_page=None, delay=4):
         """
         This function adds potentially new page to frontier and creates new empty page entry with code "FRONTIER"
+        :param delay: number of second to delay crawler
         :param new_url: full url of potentially new page (string) to be added to frontier
         :type new_url: str
         :param from_page: page that url was found on
@@ -48,7 +49,7 @@ class Frontier:
             site.save()
 
         page_type = PageType.objects.get(code="FRONTIER")
-        page = Page(url=new_url, site=site, page_type_code=page_type)
+        page = Page(url=new_url, site=site, page_type_code=page_type, crawl_delay=delay)
         page.save()
 
         # Create link if valid from_page was given
