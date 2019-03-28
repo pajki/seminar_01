@@ -1,5 +1,7 @@
+from datetime import datetime
 from logging import getLogger
 
+import pytz
 from django.core.management.base import BaseCommand
 
 from sites.helpers.ThreadManager.ThreadManager import ThreadManager
@@ -20,6 +22,11 @@ class Command(BaseCommand):
         """
         Entry point of our crawler, runs the thread manager.
         """
+        s = datetime.now(tz=pytz.UTC)
+        logger.info("Starting time: {}".format(s))
         logger.info("Starting thread manager...")
         thread_manager = ThreadManager(options["concurrency"])
         thread_manager.run()
+        e = datetime.now(tz=pytz.UTC)
+        logger.info("Stopping time: {}".format(e))
+        logger.info("Total running time: {}".format(e - s))
