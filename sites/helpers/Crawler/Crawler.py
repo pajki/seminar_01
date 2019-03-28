@@ -3,6 +3,7 @@ from logging import getLogger
 from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 from sites.helpers.Parser.RobotsParser import RobotsParser
 from sites.helpers.Parser.Extractor import Extractor
+from sites.helpers.Crawler.UrlUtils import url_fix_relative
 
 logger = getLogger(__name__)
 
@@ -49,8 +50,6 @@ class Crawler:
 
             # parse URLs
             logger.info("Parsing URLs")
-            a_url = self.extractor.parse_urls(cleaned_html)
-            logger.debug("Extracted URLs from <a> tag %s" % a_url)
             all_urls += self.extractor.parse_urls(cleaned_html)
 
             # [IMAGE]
@@ -98,6 +97,7 @@ class Crawler:
             if sitemap_content:
                 sitemap_urls = self.extractor.parse_sitemap(sitemap_content)
                 logger.info("Parsed sitemap from DB, found %s" % sitemap_urls)
+                all_urls += sitemap_content
             else:
                 logger.info("Sitemap not found")
 
@@ -107,12 +107,20 @@ class Crawler:
             # TODO: our extractor extracts data from html. Not all URLs are in correct format. We need to handle those.
             # TODO: write URL helper class to handle urls
 
+            filtered_urls = []
             # remove disallowed urls (check in robots.txt)
             if robots_content:
                 logger.info("Removing disallowed URLs")
                 for u in all_urls:
                     if self.robotParser.check_if_can_fetch(u):
-                        all_urls.append(u)
+                        filtered_urls.append(u)
+            else:
+                filtered_urls = all_urls
+
+            for u in filtered_urls:
+                tmp_url = url_fix_relative(u)
+                if tmp_url:
+                    self.frontier.add_url(from_page=current_url, new_url=tmp_url)
 
             # [EXTRACT additional data types -> PDF, etc.]
             # TODO extract additional documents and save them to DB
@@ -122,6 +130,7 @@ class Crawler:
             # [UPDATE FRONTIER]
 
             # [GET NEW URL from FRONTIER]
+            self.run()
 
 
 if __name__ == "__main__":
