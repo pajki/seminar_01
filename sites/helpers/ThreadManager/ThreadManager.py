@@ -10,6 +10,8 @@ from sites.helpers.Frontier.Frontier import Frontier
 
 logger = getLogger(__name__)
 
+seed = ["http://evem.gov.si", "http://e-uprava.gov.si", "http://podatki.gov.si", "http://e-prostor.gov.si"]
+
 
 class ThreadManager:
 
@@ -19,7 +21,7 @@ class ThreadManager:
         """
         self.threads = []
         self.thread_num = thread_num
-        self.frontier = Frontier(initial_url_seed=["http://evem.gov.si/evem/drzavljani/zacetna.evem", "http://e-uprava.gov.si"])
+        self.frontier = Frontier(initial_url_seed=seed)
         self.url_add_lock = Lock()
 
     def run(self):
