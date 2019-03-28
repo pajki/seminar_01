@@ -18,7 +18,7 @@ class ThreadManager:
         """
         self.threads = []
         self.thread_num = thread_num
-        self.frontier = Frontier(initial_url_seed=["evem.gov.si/evem/drzavljani/zacetna.evem", "e-uprava.gov.si"])
+        self.frontier = Frontier(initial_url_seed=["http://evem.gov.si/evem/drzavljani/zacetna.evem", "http://e-uprava.gov.si"])
         # self.frontier = Frontier(initial_url_seed=["evem.gov.si/"], )
 
     def run(self):

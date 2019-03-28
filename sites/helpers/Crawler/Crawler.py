@@ -118,9 +118,9 @@ class Crawler:
                 filtered_urls = all_urls
 
             for u in filtered_urls:
-                tmp_url = url_fix_relative(u)
+                tmp_url = url_fix_relative(u, current_url)
                 if tmp_url:
-                    self.frontier.add_url(from_page=current_url, new_url=tmp_url)
+                    self.frontier.add_url(from_page=page, new_url=tmp_url)
 
             # [EXTRACT additional data types -> PDF, etc.]
             # TODO extract additional documents and save them to DB

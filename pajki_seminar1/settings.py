@@ -161,7 +161,7 @@ LOGGING = {
 }
 
 # Crawler thread settings
-CRAWLER_THREAD_TIMEOUT = 60
+CRAWLER_THREAD_TIMEOUT = 15
 
 
 # Import local settings
