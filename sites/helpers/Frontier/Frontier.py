@@ -1,5 +1,5 @@
 from logging import getLogger
-from queue import LifoQueue, Empty
+from queue import Queue, Empty
 from urllib.parse import urldefrag, urlparse
 
 from sites.helpers.Downloader.HttpDownloader import HttpDownloader
@@ -11,7 +11,7 @@ logger = getLogger(__name__)
 class Frontier:
 
     def __init__(self, http_downloader=HttpDownloader(), initial_url_seed=[]):
-        self.queue = LifoQueue()
+        self.queue = Queue()
         self.http_downloader = http_downloader
         # Initial seed URLs
         for u in initial_url_seed:
