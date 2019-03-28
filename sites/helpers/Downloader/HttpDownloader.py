@@ -47,10 +47,14 @@ class HttpDownloader:
         :return: Web page content and status code
         """
         logger.info('HttpDownloader|\tGet page body for URL: %s' % url)
-        response = requests.get(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
-
-        logger.info('HttpDownloader|\tStatus code: %s' % response.status_code)
-        return response.text, response.status_code
+        try:
+            response = requests.get(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
+            logger.info('HttpDownloader|\tStatus code: %s' % response.status_code)
+            return response.text, response.status_code
+        except Exception as e:
+            logger.info('HttpDownloader|\tError in get_page_body')
+            logger.error(e)
+        return None, None
 
     def get_sitemap_for_url(self, base_url, append_file_name=False):
         """
