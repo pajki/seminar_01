@@ -52,7 +52,7 @@ class ThreadManager:
                     logger.info("Goodbye.")
                     return self.thread_num
 
-                timeout = int(settings.CRAWLER_THREAD_TIMEOUT / 4 + randint(-3, 3))
+                timeout = int(settings.CRAWLER_THREAD_TIMEOUT / 2 + randint(-3, 3))
                 logger.info("{} out of {} threads are asleep. Checking again in {} seconds.".format(
                     sleeping_threads, self.thread_num, timeout))
                 sleep(timeout)
