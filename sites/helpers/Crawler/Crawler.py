@@ -64,8 +64,7 @@ class Crawler:
 
         if empty:
             logger.info("Frontier is empty %s" % empty)
-            # TODO: tell thread manager that frontier is empty -> put this instance to sleep
-            return empty
+            return None
 
         if not empty:
             current_url = page.url
@@ -194,8 +193,10 @@ class Crawler:
 
             print("Extracted: {} urls, current url: {}".format(len(filtered_urls), current_url))
 
+            return current_url
+
             # [GET NEW URL from FRONTIER]
-            self.run()
+            # self.run()
 
 
 if __name__ == "__main__":
