@@ -20,7 +20,7 @@ class Frontier:
             self.add_url(u)
 
         # restore data from DB on init
-        # self.restore_frontier_from_db()
+        self.restore_frontier_from_db()
 
     def add_url(self, new_url, from_page=None):
         """

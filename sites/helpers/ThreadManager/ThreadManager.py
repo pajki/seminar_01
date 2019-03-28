@@ -18,8 +18,8 @@ class ThreadManager:
         """
         self.threads = []
         self.thread_num = thread_num
-        # self.frontier = Frontier(initial_url_seed=["evem.gov.si/evem/drzavljani/zacetna.evem", "e-uprava.gov.si"])
-        self.frontier = Frontier(initial_url_seed=["evem.gov.si/evem/drzavljani/zacetna.evem"], )
+        self.frontier = Frontier(initial_url_seed=["evem.gov.si/evem/drzavljani/zacetna.evem", "e-uprava.gov.si"])
+        # self.frontier = Frontier(initial_url_seed=["evem.gov.si/"], )
 
     def run(self):
         """
@@ -45,8 +45,7 @@ class ThreadManager:
                 if sleeping_threads == self.thread_num:
                     logger.info("Our work here is done. Stopping all threads and exiting.")
                     for thread in self.threads:
-                        logger.info("Joining thread {}.".format(thread.thread_id))
-                        thread.join()
+                        thread.kill_thread()
                     logger.info("Goodbye.")
                     return self.thread_num
 
@@ -57,9 +56,8 @@ class ThreadManager:
 
         except KeyboardInterrupt:
             logger.info("Keyboard interrupt initiated.")
-            logger.info("Stopping threads...")
+            logger.info("Killing threads...")
             for thread in self.threads:
-                thread.join()
-                logger.info("Thread {} stopped.".format(thread.thread_id))
-            logger.info("All threads stopped, goodbye.")
+                thread.kill_thread()
+            logger.info("Goodbye.")
             return self.thread_num

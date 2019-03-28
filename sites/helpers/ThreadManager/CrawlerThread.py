@@ -21,6 +21,7 @@ class CrawlerThread(Thread):
         self.thread_id = thread_id
         self.crawler = Crawler(frontier)
         self.asleep = False
+        self.kill = False
 
     def run(self):
         """
@@ -39,6 +40,9 @@ class CrawlerThread(Thread):
             self.asleep = True
             sleep(settings.CRAWLER_THREAD_TIMEOUT)
             self.asleep = False
+            if self.kill:
+                logger.info("Killing thread {}".format(self.thread_id))
+                return 420
             logger.info("Thread {} resuming.".format(self.thread_id))
 
     def is_sleeping(self):
@@ -46,3 +50,9 @@ class CrawlerThread(Thread):
         Return the value of self.asleep to tell if the thread is sleeping.
         """
         return self.asleep
+
+    def kill_thread(self):
+        """
+        Set kill flag to True.
+        """
+        self.kill = True
