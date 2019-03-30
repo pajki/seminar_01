@@ -136,7 +136,7 @@ class Crawler:
             # Check for defined sitemaps in robots.txt
             for sitemap_url in robots_sitemap_urls:
                 logger.info("Downloading sitemap for %s" % sitemap_url)
-                content = self.downloader.get_sitemap_for_url(sitemap_url)
+                content, _ = self.downloader.get_sitemap_for_url(sitemap_url)
                 s_urls = self.extractor.parse_sitemap(content)
                 logger.info("Appending sitemap urls to all urls %s" % s_urls)
                 all_urls += s_urls
