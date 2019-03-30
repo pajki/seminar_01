@@ -10,7 +10,7 @@ from sites.helpers.Frontier.Frontier import Frontier
 
 logger = getLogger(__name__)
 
-seed = ["http://evem.gov.si", "http://e-uprava.gov.si", "http://podatki.gov.si", "http://e-prostor.gov.si"]
+seed = ["http://www.evem.gov.si", "http://www.e-uprava.gov.si", "http://www.podatki.gov.si", "http://www.e-prostor.gov.si"]
 
 
 class ThreadManager:

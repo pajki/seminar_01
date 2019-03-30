@@ -12,7 +12,7 @@ class HttpDownloader:
 
     Every method returns content and status code
     """
-    def __init__(self, verify=False, allow_redirects=True, timeout=10):
+    def __init__(self, verify=False, allow_redirects=True, timeout=20):
         # set default params
         self.verify = verify
         self.allow_redirects = allow_redirects
