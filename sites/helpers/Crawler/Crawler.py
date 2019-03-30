@@ -9,8 +9,6 @@ from sites.helpers.Crawler.UrlUtils import url_fix_relative
 
 logger = getLogger(__name__)
 
-DEFAULT_CRAWL_DELAY = 4
-
 
 class Crawler:
     def __init__(self, frontier, add_url_lock):
@@ -57,7 +55,7 @@ class Crawler:
         all_urls = []
 
         # default crawl delay is 4 s
-        crawl_delay = 4
+        crawl_delay = None
         request_rate = None
 
         # [FRONTIER]
@@ -71,6 +69,12 @@ class Crawler:
         if not empty:
             current_url = page.url
             logger.info("Got obj from frontier %s" % current_url)
+
+            # [CRAWL DELAY]
+            # get crawl delay for page
+            delay = page.crawl_delay
+            logger.info("Waiting crawl delay %s for %s" % (delay, current_url))
+            sleep(delay)
 
             # [HTML]
             logger.info("[HTML]")
@@ -112,6 +116,8 @@ class Crawler:
 
                 # [CRAWL DELAY]
                 crawl_delay = self.robotParser.get_crawl_delay()
+                if request_rate:
+                    logger.info("Got crawl delay from robots %s" % crawl_delay)
 
                 # [REQUEST RATE] TODO: not covered - maybe not needed
                 request_rate = self.robotParser.get_request_rate()
@@ -130,7 +136,7 @@ class Crawler:
             # Check for defined sitemaps in robots.txt
             for sitemap_url in robots_sitemap_urls:
                 logger.info("Downloading sitemap for %s" % sitemap_url)
-                content = self.downloader.get_sitemap_for_url(sitemap_url)
+                content, _ = self.downloader.get_sitemap_for_url(sitemap_url)
                 s_urls = self.extractor.parse_sitemap(content)
                 logger.info("Appending sitemap urls to all urls %s" % s_urls)
                 all_urls += s_urls
@@ -179,17 +185,15 @@ class Crawler:
             for u in filtered_urls:
                 tmp_url = url_fix_relative(u, current_url)
                 if tmp_url:
-                    self.frontier.add_url(from_page=page, new_url=tmp_url)
+                    if crawl_delay:
+                        self.frontier.add_url(from_page=page, new_url=tmp_url, delay=crawl_delay)
+                    else:
+                        self.frontier.add_url(from_page=page, new_url=tmp_url)
             self.add_url_lock.release()
 
-            print("Crawled: {}, current url: {}".format(len(filtered_urls), current_url))
+            print("Extracted: {} urls, current url: {}".format(len(filtered_urls), current_url))
 
-            # [CRAWL DELAY]
-            logger.info("Waiting crawl delay %s for %s" % (crawl_delay, current_url))
-            if crawl_delay:
-                sleep(crawl_delay)
-            else:
-                sleep(DEFAULT_CRAWL_DELAY)
+            return current_url
 
             return current_url
 

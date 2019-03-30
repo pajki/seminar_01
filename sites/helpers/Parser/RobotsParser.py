@@ -7,6 +7,7 @@ from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 
 logger = getLogger(__name__)
 
+
 def check_robots_url(url):
     """
     Check url structure and append robots.txt if needed
@@ -147,8 +148,9 @@ class RobotsParser:
         if self.content is None:
             logger.info("WARNING: No robots.txt content. Did we download it?")
             return []
-        r_content = self.content.lower()
-        return [url.strip() for url in r_content.split("sitemap: ")[1:]]
+        r_content = self.content
+        return [url.strip() for url in r_content.split("sitemap: ")[1:]] + [url.strip() for url in
+                                                                            r_content.split("Sitemap: ")[1:]]
 
     def set_robots_content(self, new_content):
         """

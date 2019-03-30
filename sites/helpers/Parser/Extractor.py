@@ -1,6 +1,7 @@
 import re
 from logging import getLogger
 from bs4 import BeautifulSoup
+from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 
 logger = getLogger(__name__)
 
@@ -76,8 +77,11 @@ class Extractor:
         if xml is None:
             return urls
 
-        bs = BeautifulSoup(xml)
+        bs = BeautifulSoup(xml, 'lxml')
         sitemap_tags = bs.find_all("sitemap")
+
+        if len(sitemap_tags) == 0:
+            sitemap_tags = bs.find_all("url")
 
         logger.info("Extractor|\tThe number of sitemaps are {0}".format(len(sitemap_tags)))
 
@@ -103,6 +107,7 @@ class Extractor:
 if __name__ == "__main__":
     # Init class
     e = Extractor()
+    d = HttpDownloader()
 
     html_doc = """
         <html><head><title>The Dormouse's story</title></head>
@@ -144,3 +149,6 @@ if __name__ == "__main__":
     print(img_url)
 
     print(e.parse_files(clean_html))
+
+    s, _ = d.get_sitemap_for_url("http://www.e-prostor.gov.si/?eID=dd_googlesitemap")
+    print(e.parse_sitemap(s))

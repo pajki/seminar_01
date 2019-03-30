@@ -12,7 +12,7 @@ class HttpDownloader:
 
     Every method returns content and status code
     """
-    def __init__(self, verify=False, allow_redirects=True, timeout=50):
+    def __init__(self, verify=False, allow_redirects=True, timeout=20):
         # set default params
         self.verify = verify
         self.allow_redirects = allow_redirects
@@ -47,10 +47,14 @@ class HttpDownloader:
         :return: Web page content and status code
         """
         logger.info('HttpDownloader|\tGet page body for URL: %s' % url)
-        response = requests.get(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
-
-        logger.info('HttpDownloader|\tStatus code: %s' % response.status_code)
-        return response.text, response.status_code
+        try:
+            response = requests.get(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
+            logger.info('HttpDownloader|\tStatus code: %s' % response.status_code)
+            return response.text, response.status_code
+        except Exception as e:
+            logger.info('HttpDownloader|\tError in get_page_body')
+            logger.error(e)
+        return None, None
 
     def get_sitemap_for_url(self, base_url, append_file_name=False):
         """
@@ -70,7 +74,7 @@ class HttpDownloader:
             content_type = headers["content-type"]
 
             # check if response is in xml
-            if (content_type == "application/xml" or content_type == "text/xml") and response.status_code == 200:
+            if "application/xml" in content_type or "text/xml" in content_type:
                 logger.info("HttpDownloader|\tFOUND sitemap.xml file")
                 return response.text, response.status_code
             logger.info("HttpDownloader|\tNO sitemap.xml file")
@@ -101,7 +105,7 @@ class HttpDownloader:
             content_type = headers["content-type"]
 
             # check if response is in text/plain
-            if content_type == "text/plain" and response.status_code == 200:
+            if "text/plain" in content_type:
                 logger.info("HttpDownloader|\tFOUND robots.txt file")
                 return response.text, response.status_code
 
@@ -130,7 +134,7 @@ if __name__ == "__main__":
     robots, status = downloader.get_robots_file('http://www.najdi.si/robots.txt')
     logger.info(robots)
 
-    sitemap, status = downloader.get_robots_file('http://www.google.si', True)
+    sitemap, _ = downloader.get_robots_file('http://www.google.si', True)
     logger.info(sitemap)
     #
     # a, status = downloader.head("http://evem.gov.si/robots.txt")
