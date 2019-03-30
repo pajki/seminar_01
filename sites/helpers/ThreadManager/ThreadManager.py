@@ -33,6 +33,8 @@ class ThreadManager:
             crawler_thread = CrawlerThread(i, self.frontier, self.url_add_lock)
             crawler_thread.start()
             self.threads.append(crawler_thread)
+            # delay starting new threads
+            sleep(2)
         logger.info("Threads initialized.")
 
         # Do thread management and end when there are not more URLs to parse.
