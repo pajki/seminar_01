@@ -15,13 +15,13 @@ seed = ["http://www.evem.gov.si", "http://www.e-uprava.gov.si", "http://www.poda
 
 class ThreadManager:
 
-    def __init__(self, thread_num):
+    def __init__(self, thread_num, restore=True):
         """
         :param thread_num: number of threads to start.
         """
         self.threads = []
         self.thread_num = thread_num
-        self.frontier = Frontier(initial_url_seed=seed, restore=True)
+        self.frontier = Frontier(initial_url_seed=seed, restore=restore)
         self.url_add_lock = Lock()
 
     def run(self):

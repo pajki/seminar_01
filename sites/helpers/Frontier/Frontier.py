@@ -16,8 +16,11 @@ class Frontier:
 
         # Initial seed URLs
         if not restore:
+            logger.info("Starting from inital seed.")
             for u in initial_url_seed:
                 self.add_url(u)
+        else:
+            logger.info("Resuming from frontier.")
 
         if restore:
             # restore data from DB on init
