@@ -32,5 +32,5 @@ def url_fix_relative(url, caller_url, only_gov_si=True):
 
 def url_is_gov_si(domain):
 
-    return domain[-6:] == "gov.si"
+    return domain[-7:] == ".gov.si"
 
