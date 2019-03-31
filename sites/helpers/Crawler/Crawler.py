@@ -91,6 +91,7 @@ class Crawler:
                 logger.info("updating page page")
                 self.update_current_page_entry(page, http_status_code, html_content)
                 self.add_url_lock.release()
+                print("No content for %s " % current_url)
                 return current_url
 
             # clean html content
@@ -203,7 +204,7 @@ class Crawler:
                         self.frontier.add_url(from_page=page, new_url=tmp_url)
             self.add_url_lock.release()
 
-            print("Extracted: {} urls, current url: {}".format(len(filtered_urls), current_url))
+            print("Extracted: {} urls from {}".format(len(filtered_urls), current_url))
 
             return current_url
 
