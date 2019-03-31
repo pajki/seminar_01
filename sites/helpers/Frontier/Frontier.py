@@ -10,15 +10,18 @@ logger = getLogger(__name__)
 
 class Frontier:
 
-    def __init__(self, http_downloader=HttpDownloader(), initial_url_seed=[]):
+    def __init__(self, http_downloader=HttpDownloader(), initial_url_seed=[], restore=True):
         self.queue = Queue()
         self.http_downloader = http_downloader
-        # Initial seed URLs
-        for u in initial_url_seed:
-            self.add_url(u)
 
-        # restore data from DB on init
-        self.restore_frontier_from_db()
+        # Initial seed URLs
+        if not restore:
+            for u in initial_url_seed:
+                self.add_url(u)
+
+        if restore:
+            # restore data from DB on init
+            self.restore_frontier_from_db()
 
     def add_url(self, new_url, from_page=None, delay=4):
         """

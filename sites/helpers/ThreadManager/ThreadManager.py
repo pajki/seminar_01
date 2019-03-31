@@ -21,7 +21,7 @@ class ThreadManager:
         """
         self.threads = []
         self.thread_num = thread_num
-        self.frontier = Frontier(initial_url_seed=seed)
+        self.frontier = Frontier(initial_url_seed=seed, restore=True)
         self.url_add_lock = Lock()
 
     def run(self):
