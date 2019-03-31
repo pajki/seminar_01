@@ -24,7 +24,7 @@ class Extractor:
         :return: cleaned content
         """
         soup = BeautifulSoup(html_content, 'lxml')
-        logger.info("Extractor|\tCleaning html")
+        logger.info("Cleaning html")
         return soup.prettify()
 
     def parse_urls(self, html_content):
@@ -36,11 +36,11 @@ class Extractor:
         bs = BeautifulSoup(html_content, "lxml")
         urls = []
 
-        logger.info("Extractor|\tParsing urls from <a/>")
+        logger.info("Parsing urls from <a/>")
         # extract url from <a href={url} />
         urls += [url['href'] for url in bs.find_all('a', href=True)]
 
-        logger.info("Extractor|\tParsing urls from location api")
+        logger.info("Parsing urls from location api")
         # extract url fromjs navigation API
         regex = r"location.assign\((.*)\)|location.replace\((.*)\)|location\.href\=\"(.*)\"|location\.href\=\'(.*)\'"
         matches = re.finditer(regex, html_content, re.MULTILINE)
@@ -50,7 +50,7 @@ class Extractor:
                 groupNum = groupNum + 1
                 if match.group(groupNum):
                     urls.append(match.group(groupNum))
-        logger.info("Extractor|\tFound %d" % len(urls))
+        logger.info("Found %d" % len(urls))
         return urls
 
     def parse_img_urls(self, html_content):
@@ -61,7 +61,7 @@ class Extractor:
         """
         bs = BeautifulSoup(html_content, 'lxml')
         urls = []
-        logger.info("Extractor|\tParsing urls from <img>")
+        logger.info("Parsing urls from <img>")
         for img in bs.find_all('img'):
             urls.append(img['src'])
         return urls
@@ -83,7 +83,7 @@ class Extractor:
         if len(sitemap_tags) == 0:
             sitemap_tags = bs.find_all("url")
 
-        logger.info("Extractor|\tThe number of sitemaps are {0}".format(len(sitemap_tags)))
+        logger.info("The number of sitemaps are {0}".format(len(sitemap_tags)))
 
         # return [sitemap.findNext('loc').text for sitemap in sitemap_tags]
         for sitemap in sitemap_tags:
@@ -99,7 +99,7 @@ class Extractor:
         :param html:
         :return:
         """
-        logger.info("Extractor|\tParsing urls for files")
+        logger.info("Parsing urls for files")
         files = re.findall('href="(.*pdf|.*doc|.*docx|.*ppt|.*pptx)"', html)
         return files
 
