@@ -20,17 +20,23 @@ def url_fix_relative(url, caller_url, only_gov_si=True):
     if not url_parsed.scheme:
         url = "http://" + url
 
+    allowed_extensions = ["aspx","axd","asx","asmx","ashx","CSS","css","cfm","yaws","swf","html","htm","xhtml","jhtml",
+                          "jsp","jspx","wss","do","action","js","pl","php","php4","php3","phtml","py","rb","rhtml",
+                          "shtml","xml","rss","svg","cgi","dll"]
+
+    if len(url_parsed.path.split(".")) != 1:
+        if url_parsed.path.split(".")[-1] not in allowed_extensions:
+            return None
+
     if only_gov_si and not url_is_gov_si(url_parsed.netloc):
         return None
 
     url = urldefrag(url).url
 
-    #TODO check for more weird urls..
+    # TODO check for more weird urls..
 
     return url
 
 
 def url_is_gov_si(domain):
-
     return domain[-7:] == ".gov.si"
-
