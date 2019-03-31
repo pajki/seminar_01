@@ -37,7 +37,6 @@ class Frontier:
         :return: value that indicates whether url was added to frontier
         :rtype: bool
         """
-
         if Page.objects.filter(url=new_url).exists():
             return False
 
@@ -67,7 +66,6 @@ class Frontier:
                 logger.error("from_page must be valid Page instance")
 
         self.queue.put(page)
-
         return True
 
     def get_url(self):

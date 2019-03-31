@@ -82,9 +82,10 @@ class Crawler:
             logger.info("[HTML]")
             logger.info("Downloading page HTML")
             html_content, http_status_code = self.downloader.get_page_body(current_url)
+            logger.info("Status code: [%s]" % http_status_code)
 
             # no HTML content was received, return and crawl new url
-            if not html_content:
+            if not html_content or http_status_code == 404:
                 logger.info("No html, stop crawling %s" % current_url)
                 self.add_url_lock.acquire()
                 try:
@@ -198,6 +199,10 @@ class Crawler:
                 # logger.info("saving documents")
                 # self.save_document_to_db()
 
+                if len(filtered_urls) > 500:
+                    logger.info("Skipping to much to handle")
+                    return current_url
+
                 logger.info("Adding items to frontier")
                 # [UPDATE FRONTIER]
                 # Add filtered URLs to frontier
@@ -208,12 +213,14 @@ class Crawler:
                             self.frontier.add_url(from_page=page, new_url=tmp_url, delay=crawl_delay)
                         else:
                             self.frontier.add_url(from_page=page, new_url=tmp_url)
+
+                logger.info("Frontier updated")
             finally:
                 logger.info("Releasing lock")
                 self.add_url_lock.release()
                 logger.info("Lock released")
 
-            print("Extracted: {} urls from {}".format(len(filtered_urls), current_url))
+            print("Extracted: {} urls from\n{}".format(len(filtered_urls), current_url))
 
             return current_url
 
