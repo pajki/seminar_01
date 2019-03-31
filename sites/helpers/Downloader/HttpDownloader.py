@@ -54,7 +54,7 @@ class HttpDownloader:
         except Exception as e:
             logger.info('Error in get_page_body')
             logger.error(e)
-        return None, None
+        return None, 400
 
     def get_sitemap_for_url(self, base_url, append_file_name=False):
         """
@@ -82,7 +82,7 @@ class HttpDownloader:
         except Exception as e:
             logger.error(e)
 
-        return None, None
+        return None, 400
 
     def get_robots_file(self, base_url, append_file_name=False):
         """
@@ -114,7 +114,7 @@ class HttpDownloader:
         except Exception as e:
             logger.error(e)
 
-        return None, None
+        return None, 400
 
 
 if __name__ == "__main__":

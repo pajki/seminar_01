@@ -86,6 +86,11 @@ class Crawler:
             # no HTML content was received, return and crawl new url
             if not html_content:
                 logger.info("No html, stop crawling %s" % current_url)
+                self.add_url_lock.acquire()
+                # update page entry
+                logger.info("updating page page")
+                self.update_current_page_entry(page, http_status_code, html_content)
+                self.add_url_lock.release()
                 return current_url
 
             # clean html content
@@ -145,7 +150,7 @@ class Crawler:
                 logger.info("Downloading sitemap for %s" % sitemap_url)
                 content, _ = self.downloader.get_sitemap_for_url(sitemap_url)
                 s_urls = self.extractor.parse_sitemap(content)
-                logger.info("Appending sitemap urls to all urls %s" % s_urls)
+                logger.info("Appending sitemap urls to all urls %s" % len(s_urls))
                 all_urls += s_urls
 
             # Check if sitemap exists in DB
