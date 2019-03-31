@@ -41,15 +41,15 @@ class RobotsParser:
         self.file_exists = False
 
         # set robots url to fetch
-        logger.info("RobotParser|\tSetting url %s for robot parser" % self.page_url)
+        logger.info("Setting url %s for robot parser" % self.page_url)
         self.rp.set_url(self.page_url)
 
         # request and read robots file
         try:
-            logger.info("RobotParser|\tReading robots file")
+            logger.info("Reading robots file")
             # read file
             self.rp.read()
-            logger.info("RobotParser|\tContent saved in robot parser")
+            logger.info("Content saved in robot parser")
             # sets the time the robots.txt file was last fetched to the current time.
             self.rp.modified()
 
@@ -73,7 +73,7 @@ class RobotsParser:
         crawl_delay = None
         try:
             crawl_delay = self.rp.crawl_delay(useragent=useragent)
-            logger.info("RobotParser|\tCrawl delay is %s" % crawl_delay)
+            logger.info("Crawl delay is %s" % crawl_delay)
         except Exception as e:
             logger.error("get_crawl_delay:\n%s" % e)
 
@@ -91,7 +91,7 @@ class RobotsParser:
         request_rate = None
         try:
             request_rate = self.rp.request_rate(useragent=useragent)
-            logger.info("RobotParser|\tRequest rate is %s" % request_rate)
+            logger.info("Request rate is %s" % request_rate)
         except Exception as e:
             logger.error("get_request_rate:\n%s" % e)
         return request_rate
@@ -104,7 +104,7 @@ class RobotsParser:
         :param useragent: useragent -> defaults to *, leave it
         :return: Boolean
         """
-        logger.debug("RobotParser|\tChecking if can fetch %s" % url)
+        logger.debug("Checking if can fetch %s" % url)
         return self.rp.can_fetch(useragent=useragent, url=url)
 
     def get_robots_content2(self, encoding="utf-8"):
@@ -133,10 +133,10 @@ class RobotsParser:
         Use downloader class to download robots content
         :return:
         """
-        logger.info("RobotParser|\tPreparing to download robots.txt content")
+        logger.info("Preparing to download robots.txt content")
         downloader = HttpDownloader()
         self.content, self.status_code = downloader.get_robots_file(base_url=self.page_url)
-        logger.info("RobotParser|\tGET robots.txt status code %s" % self.status_code)
+        logger.info("GET robots.txt status code %s" % self.status_code)
         return self.content, self.status_code
 
     def parse_sitemap_url_in_robots_file(self):
@@ -144,7 +144,7 @@ class RobotsParser:
         Convert robots.txt file content to lowercase and extract sitemaps urls
         :return:
         """
-        logger.info("RobotParser|\tparsing robots.txt content for sitemap urls")
+        logger.info("parsing robots.txt content for sitemap urls")
         if self.content is None:
             logger.info("WARNING: No robots.txt content. Did we download it?")
             return []
@@ -158,7 +158,7 @@ class RobotsParser:
         :param new_content: robots content from database
         :return:
         """
-        logger.info("RobotParser|\tSetting new content")
+        logger.info("Setting new content")
         self.content = new_content
         self.status_code = 200
 

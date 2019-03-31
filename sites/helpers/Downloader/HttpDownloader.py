@@ -26,9 +26,9 @@ class HttpDownloader:
         :return: response object and status code
         """
         response = requests.head(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
-        logger.info('HttpDownloader|\tstatus code: %s' % response.status_code)
-        logger.info('HttpDownloader|\turl: %s' % response.url)
-        logger.info('HttpDownloader|\theaders: %s' % response.headers)
+        logger.info('status code: %s' % response.status_code)
+        logger.info('url: %s' % response.url)
+        logger.info('headers: %s' % response.headers)
         return response, response.status_code
 
     def get(self, url):
@@ -46,13 +46,13 @@ class HttpDownloader:
         :param url: target URL
         :return: Web page content and status code
         """
-        logger.info('HttpDownloader|\tGet page body for URL: %s' % url)
+        logger.info('Get page body for URL: %s' % url)
         try:
             response = requests.get(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
-            logger.info('HttpDownloader|\tStatus code: %s' % response.status_code)
+            logger.info('Status code: %s' % response.status_code)
             return response.text, response.status_code
         except Exception as e:
-            logger.info('HttpDownloader|\tError in get_page_body')
+            logger.info('Error in get_page_body')
             logger.error(e)
         return None, None
 
@@ -67,7 +67,7 @@ class HttpDownloader:
         if append_file_name:
             path += '/sitemap.xml'
 
-        logger.info('HttpDownloader|\tGET sitemap.xml for %s' % path)
+        logger.info('GET sitemap.xml for %s' % path)
         try:
             response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
             headers = response.headers
@@ -75,9 +75,9 @@ class HttpDownloader:
 
             # check if response is in xml
             if "application/xml" in content_type or "text/xml" in content_type:
-                logger.info("HttpDownloader|\tFOUND sitemap.xml file")
+                logger.info("FOUND sitemap.xml file")
                 return response.text, response.status_code
-            logger.info("HttpDownloader|\tNO sitemap.xml file")
+            logger.info("NO sitemap.xml file")
             return None, response.status_code
         except Exception as e:
             logger.error(e)
@@ -98,7 +98,7 @@ class HttpDownloader:
         if append_file_name:
             path += '/robots.txt'
 
-        logger.info('HttpDownloader|\tGET robots.txt for %s' % path)
+        logger.info('GET robots.txt for %s' % path)
         try:
             response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
             headers = response.headers
@@ -106,10 +106,10 @@ class HttpDownloader:
 
             # check if response is in text/plain
             if "text/plain" in content_type:
-                logger.info("HttpDownloader|\tFOUND robots.txt file")
+                logger.info("FOUND robots.txt file")
                 return response.text, response.status_code
 
-            logger.info("HttpDownloader|\tNO robots.txt file")
+            logger.info("NO robots.txt file")
             return None, response.status_code
         except Exception as e:
             logger.error(e)
@@ -120,22 +120,20 @@ class HttpDownloader:
 if __name__ == "__main__":
     # url samples
     # django server base page
-    # url1 = 'http://127.0.0.1:8000/'
+    url1 = 'http://www.e-uprava.gov.si'
     # init class
     downloader = HttpDownloader()
 
     # # simple tests
-    # body = downloader.get_page_body(url1)
-    # # logger.info(body)
-    #
-    # sitemap = downloader.get_sitemap_for_url('https://google.com', True)
-    # # logger.info(sitemap)
-    #
-    robots, status = downloader.get_robots_file('http://www.najdi.si/robots.txt')
-    logger.info(robots)
+    body = downloader.get_page_body(url1)
 
-    sitemap, _ = downloader.get_robots_file('http://www.google.si', True)
-    logger.info(sitemap)
+    # sitemap = downloader.get_sitemap_for_url('https://google.com', True)
+
+    # robots, status = downloader.get_robots_file('http://www.najdi.si/robots.txt')
+    # logger.info(robots)
+    #
+    # sitemap, _ = downloader.get_robots_file('http://www.google.si', True)
+    # logger.info(sitemap)
     #
     # a, status = downloader.head("http://evem.gov.si/robots.txt")
     # logger.info(a.headers)

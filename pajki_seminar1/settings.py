@@ -132,7 +132,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '[{levelname}] {asctime} {module} {thread:d}: {message}',
+            'format': '[{levelname}] ({asctime}) {thread:d} | {module}: {message}',
             'style': '{',
         },
         'simple': {
@@ -155,7 +155,7 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'file'],
+            'handlers': ['file'],
             'level': 'INFO',
         },
     }

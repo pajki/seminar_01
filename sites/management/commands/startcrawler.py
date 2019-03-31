@@ -18,6 +18,8 @@ class Command(BaseCommand):
         """
         parser.add_argument('concurrency', type=int)
 
+        parser.add_argument('--restore', action='store_true', dest='restore', help='Restore from frontier.')
+
     def handle(self, *args, **options):
         """
         Entry point of our crawler, runs the thread manager.
@@ -25,7 +27,10 @@ class Command(BaseCommand):
         s = datetime.now(tz=pytz.UTC)
         logger.info("Starting time: {}".format(s))
         logger.info("Starting thread manager...")
-        thread_manager = ThreadManager(options["concurrency"])
+        if options['restore']:
+            thread_manager = ThreadManager(options["concurrency"], True)
+        else:
+            thread_manager = ThreadManager(options["concurrency"], False)
         thread_manager.run()
         e = datetime.now(tz=pytz.UTC)
         logger.info("Stopping time: {}".format(e))

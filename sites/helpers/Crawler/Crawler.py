@@ -50,7 +50,7 @@ class Crawler:
         pass
 
     def run(self):
-        logger.info("---------------------------------------------------------------------------------------------")
+        logger.info("\n---------------------------------------------------------------------------------------------")
         logger.info("Running crawler")
         # [GLOBALS]
         robots_sitemap_urls = []
@@ -82,6 +82,11 @@ class Crawler:
             logger.info("[HTML]")
             logger.info("Downloading page HTML")
             html_content, http_status_code = self.downloader.get_page_body(current_url)
+
+            # no HTML content was received, return and crawl new url
+            if not html_content:
+                logger.info("No html, stop crawling %s" % current_url)
+                return current_url
 
             # clean html content
             logger.info("Cleaning HTML")
@@ -147,7 +152,7 @@ class Crawler:
             sitemap_content = page.site.sitemap_content
             if sitemap_content:
                 sitemap_urls = self.extractor.parse_sitemap(sitemap_content)
-                logger.info("Parsed sitemap from DB, found %s" % sitemap_urls)
+                logger.info("Parsed sitemap from DB, found %s" % len(sitemap_urls))
                 all_urls += sitemap_content
             else:
                 logger.info("Sitemap not found")
