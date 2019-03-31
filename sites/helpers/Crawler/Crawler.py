@@ -83,6 +83,11 @@ class Crawler:
             logger.info("Downloading page HTML")
             html_content, http_status_code = self.downloader.get_page_body(current_url)
 
+            # no HTML content was received, return and crawl new url
+            if not html_content:
+                logger.info("No html, stop crawling %s" % current_url)
+                return current_url
+
             # clean html content
             logger.info("Cleaning HTML")
             cleaned_html = self.extractor.clean_html(html_content)

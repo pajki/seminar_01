@@ -120,22 +120,20 @@ class HttpDownloader:
 if __name__ == "__main__":
     # url samples
     # django server base page
-    # url1 = 'http://127.0.0.1:8000/'
+    url1 = 'http://www.e-uprava.gov.si'
     # init class
     downloader = HttpDownloader()
 
     # # simple tests
-    # body = downloader.get_page_body(url1)
-    # # logger.info(body)
-    #
-    # sitemap = downloader.get_sitemap_for_url('https://google.com', True)
-    # # logger.info(sitemap)
-    #
-    robots, status = downloader.get_robots_file('http://www.najdi.si/robots.txt')
-    logger.info(robots)
+    body = downloader.get_page_body(url1)
 
-    sitemap, _ = downloader.get_robots_file('http://www.google.si', True)
-    logger.info(sitemap)
+    # sitemap = downloader.get_sitemap_for_url('https://google.com', True)
+
+    # robots, status = downloader.get_robots_file('http://www.najdi.si/robots.txt')
+    # logger.info(robots)
+    #
+    # sitemap, _ = downloader.get_robots_file('http://www.google.si', True)
+    # logger.info(sitemap)
     #
     # a, status = downloader.head("http://evem.gov.si/robots.txt")
     # logger.info(a.headers)

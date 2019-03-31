@@ -28,41 +28,41 @@ class ThreadManager:
         """
         Start self.thread_num of threads and then manage their execution.
         """
-        logger.info("Initializing threads...")
+        print("Initializing threads...")
         for i in range(0, self.thread_num):
             crawler_thread = CrawlerThread(i, self.frontier, self.url_add_lock)
             crawler_thread.start()
             self.threads.append(crawler_thread)
             # delay starting new threads
             sleep(2)
-        logger.info("Threads initialized.")
+        print("Threads initialized.")
 
         # Do thread management and end when there are not more URLs to parse.
         try:
             while True:
                 sleeping_threads = 0
-                logger.info("Checking for sleeping threads...")
+                print("Checking for sleeping threads...")
                 for thread in self.threads:
                     if thread.is_sleeping():
                         sleeping_threads += 1
-                        logger.info("Thread {} is asleep.".format(thread.thread_id))
+                        print("Thread {} is asleep.".format(thread.thread_id))
 
                 if sleeping_threads == self.thread_num:
-                    logger.info("Our work here is done. Stopping all threads and exiting.")
+                    print("Our work here is done. Stopping all threads and exiting.")
                     for thread in self.threads:
                         thread.kill_thread()
-                    logger.info("Goodbye.")
+                    print("Goodbye.")
                     return self.thread_num
 
                 timeout = int(settings.CRAWLER_THREAD_TIMEOUT / 2 + randint(-3, 3))
-                logger.info("{} out of {} threads are asleep. Checking again in {} seconds.".format(
+                print("{} out of {} threads are asleep. Checking again in {} seconds.".format(
                     sleeping_threads, self.thread_num, timeout))
                 sleep(timeout)
 
         except KeyboardInterrupt:
-            logger.info("Keyboard interrupt initiated.")
-            logger.info("Killing threads...")
+            print("Keyboard interrupt initiated.")
+            print("Killing threads...")
             for thread in self.threads:
                 thread.kill_thread()
-            logger.info("Goodbye.")
+            print("Goodbye.")
             return self.thread_num
