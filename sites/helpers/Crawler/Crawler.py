@@ -180,6 +180,7 @@ class Crawler:
             # [EXTRACT additional data types -> PDF, etc.]
             # TODO extract additional documents and save them to DB
 
+            logger.info("Lock acquired")
             self.add_url_lock.acquire()
             # [SAVE DATA TO DB]
             logger.info("[DATABASE]")
@@ -203,6 +204,7 @@ class Crawler:
                     else:
                         self.frontier.add_url(from_page=page, new_url=tmp_url)
             self.add_url_lock.release()
+            logger.info("Lock released")
 
             print("Extracted: {} urls from {}".format(len(filtered_urls), current_url))
 
