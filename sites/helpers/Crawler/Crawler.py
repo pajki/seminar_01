@@ -220,7 +220,7 @@ class Crawler:
                 self.add_url_lock.release()
                 logger.info("Lock released")
 
-            print("Extracted: {} urls from\n{}".format(len(filtered_urls), current_url))
+            print("Extracted: {} urls from {}".format(len(filtered_urls), current_url))
 
             return current_url
 
