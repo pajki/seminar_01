@@ -31,7 +31,9 @@ class Crawler:
         page.http_status_code = http_code
         page.html_content = html_content
         page.accessed_time = timezone.now()
+        logger.info("Saving page {}...".format(page.url))
         page.save()
+        logger.info("Paged {} saved.".format(page.url))
 
     def save_img_url_to_db(self):
         """
