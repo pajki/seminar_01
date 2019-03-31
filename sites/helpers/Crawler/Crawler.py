@@ -167,6 +167,7 @@ class Crawler:
             # [EXTRACT additional data types -> PDF, etc.]
             # TODO extract additional documents and save them to DB
 
+            self.add_url_lock.acquire()
             # [SAVE DATA TO DB]
             logger.info("[DATABASE]")
             # update page entry
@@ -181,7 +182,6 @@ class Crawler:
 
             # [UPDATE FRONTIER]
             # Add filtered URLs to frontier
-            self.add_url_lock.acquire()
             for u in filtered_urls:
                 tmp_url = url_fix_relative(u, current_url)
                 if tmp_url:
@@ -194,11 +194,6 @@ class Crawler:
             print("Extracted: {} urls, current url: {}".format(len(filtered_urls), current_url))
 
             return current_url
-
-            return current_url
-
-            # [GET NEW URL from FRONTIER]
-            # self.run()
 
 
 if __name__ == "__main__":
