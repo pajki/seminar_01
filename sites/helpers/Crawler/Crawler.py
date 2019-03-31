@@ -87,10 +87,12 @@ class Crawler:
             if not html_content:
                 logger.info("No html, stop crawling %s" % current_url)
                 self.add_url_lock.acquire()
-                # update page entry
-                logger.info("updating page page")
-                self.update_current_page_entry(page, http_status_code, html_content)
-                self.add_url_lock.release()
+                try:
+                    # update page entry
+                    logger.info("updating page page")
+                    self.update_current_page_entry(page, http_status_code, html_content)
+                finally:
+                    self.add_url_lock.release()
                 print("No content for %s " % current_url)
                 return current_url
 
@@ -182,29 +184,31 @@ class Crawler:
 
             logger.info("Lock acquired")
             self.add_url_lock.acquire()
-            # [SAVE DATA TO DB]
-            logger.info("[DATABASE]")
-            # update page entry
-            logger.info("saving page")
-            self.update_current_page_entry(page, http_status_code, cleaned_html)
-            # save images
-            # logger.info("saving img")
-            # self.save_img_url_to_db()
-            # save additional documents
-            # logger.info("saving documents")
-            # self.save_document_to_db()
+            try:
+                # [SAVE DATA TO DB]
+                logger.info("[DATABASE]")
+                # update page entry
+                logger.info("saving page")
+                self.update_current_page_entry(page, http_status_code, cleaned_html)
+                # save images
+                # logger.info("saving img")
+                # self.save_img_url_to_db()
+                # save additional documents
+                # logger.info("saving documents")
+                # self.save_document_to_db()
 
-            # [UPDATE FRONTIER]
-            # Add filtered URLs to frontier
-            for u in filtered_urls:
-                tmp_url = url_fix_relative(u, current_url)
-                if tmp_url:
-                    if crawl_delay:
-                        self.frontier.add_url(from_page=page, new_url=tmp_url, delay=crawl_delay)
-                    else:
-                        self.frontier.add_url(from_page=page, new_url=tmp_url)
-            self.add_url_lock.release()
-            logger.info("Lock released")
+                # [UPDATE FRONTIER]
+                # Add filtered URLs to frontier
+                for u in filtered_urls:
+                    tmp_url = url_fix_relative(u, current_url)
+                    if tmp_url:
+                        if crawl_delay:
+                            self.frontier.add_url(from_page=page, new_url=tmp_url, delay=crawl_delay)
+                        else:
+                            self.frontier.add_url(from_page=page, new_url=tmp_url)
+            finally:
+                self.add_url_lock.release()
+                logger.info("Lock released")
 
             print("Extracted: {} urls from {}".format(len(filtered_urls), current_url))
 
