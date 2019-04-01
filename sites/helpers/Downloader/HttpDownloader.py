@@ -1,7 +1,8 @@
-from logging import getLogger
-
 import requests
+from logging import getLogger
 from urllib.robotparser import RobotFileParser
+from sites.models import Image, PageData, DataType
+from django.utils import timezone
 
 logger = getLogger(__name__)
 
@@ -12,6 +13,7 @@ class HttpDownloader:
 
     Every method returns content and status code
     """
+
     def __init__(self, verify=False, allow_redirects=True, timeout=20):
         # set default params
         self.verify = verify
@@ -69,7 +71,8 @@ class HttpDownloader:
 
         logger.info('GET sitemap.xml for %s' % path)
         try:
-            response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
+            response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects,
+                                    timeout=self.timeout)
             headers = response.headers
             content_type = headers["content-type"]
 
@@ -100,7 +103,8 @@ class HttpDownloader:
 
         logger.info('GET robots.txt for %s' % path)
         try:
-            response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
+            response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects,
+                                    timeout=self.timeout)
             headers = response.headers
             content_type = headers["content-type"]
 
@@ -116,6 +120,61 @@ class HttpDownloader:
 
         return None, 400
 
+    def download_file_and_save_image_file(self, url, id):
+        logger.info('Downloading image from: %s' % url)
+        try:
+            response = requests.get(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout,
+                                    stream=True)
+            logger.info('Status code: %s' % response.status_code)
+
+            if response.status_code == 200:
+                headers = response.headers
+                content_type = headers["content-type"]
+                filename = url.split("/")[-1]
+
+                img = Image(page_id=id, filename=filename, data=response.content, accessed_time=timezone.now(),
+                            content_type=content_type)
+                img.save()
+                logger.info('Img saved')
+            return response.text, response.status_code
+        except Exception as e:
+            logger.info('Error in download_file_and_save_image_file')
+            logger.error(e)
+        return None, 400
+
+    def download_file_and_save(self, url, id):
+        logger.info('Downloading file from: %s' % url)
+        try:
+            response = requests.get(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout,
+                                    stream=True)
+            logger.info('Status code: %s' % response.status_code)
+
+            if response.status_code == 200:
+                headers = response.headers
+                content_type = headers["content-type"]
+
+                if 'pdf' in content_type:
+                    data_type_code = DataType.objects.get(code="PDF")
+                elif 'docx' in content_type:
+                    data_type_code = DataType.objects.get(code="DOCX")
+                elif 'doc' in content_type:
+                    data_type_code = DataType.objects.get(code="DOC")
+                elif 'pptx' in content_type:
+                    data_type_code = DataType.objects.get(code="PPTX")
+                elif 'ppt' in content_type:
+                    data_type_code = DataType.objects.get(code="PPT")
+                else:
+                    data_type_code = DataType.objects.get(code="PDF")
+
+                file = PageData(page_id=id, data_type_code=data_type_code, data=response.content)
+                file.save()
+                logger.info('File saved')
+            return response.text, response.status_code
+        except Exception as e:
+            logger.info('Error in download_file_and_save')
+            logger.error(e)
+        return None, 400
+
 
 if __name__ == "__main__":
     # url samples
@@ -125,7 +184,7 @@ if __name__ == "__main__":
     downloader = HttpDownloader()
 
     # # simple tests
-    body = downloader.get_page_body(url1)
+    # body = downloader.get_page_body(url1)
 
     # sitemap = downloader.get_sitemap_for_url('https://google.com', True)
 
@@ -143,3 +202,5 @@ if __name__ == "__main__":
     #
     # a, status = downloader.head("http://google.si/sitemap.xml")
     # logger.info(a.headers)
+    a, _ = downloader.head('http://www.geoportal.gov.si/')
+    print(a.headers)
