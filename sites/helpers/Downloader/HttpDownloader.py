@@ -1,7 +1,10 @@
-from logging import getLogger
-
 import requests
+import shutil
+from logging import getLogger
 from urllib.robotparser import RobotFileParser
+from sites.models import Image
+from django.utils import timezone
+from django.core.files.base import File
 
 logger = getLogger(__name__)
 
@@ -12,6 +15,7 @@ class HttpDownloader:
 
     Every method returns content and status code
     """
+
     def __init__(self, verify=False, allow_redirects=True, timeout=20):
         # set default params
         self.verify = verify
@@ -69,7 +73,8 @@ class HttpDownloader:
 
         logger.info('GET sitemap.xml for %s' % path)
         try:
-            response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
+            response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects,
+                                    timeout=self.timeout)
             headers = response.headers
             content_type = headers["content-type"]
 
@@ -100,7 +105,8 @@ class HttpDownloader:
 
         logger.info('GET robots.txt for %s' % path)
         try:
-            response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout)
+            response = requests.get(path, verify=self.verify, allow_redirects=self.allow_redirects,
+                                    timeout=self.timeout)
             headers = response.headers
             content_type = headers["content-type"]
 
@@ -116,6 +122,33 @@ class HttpDownloader:
 
         return None, 400
 
+    def download_file_and_save_image_file(self, url, id):
+        logger.info('Downloading image from: %s' % url)
+        try:
+            response = requests.get(url, verify=self.verify, allow_redirects=self.allow_redirects, timeout=self.timeout,
+                                    stream=True)
+            logger.info('Status code: %s' % response.status_code)
+
+            if response.status_code == 200:
+                headers = response.headers
+                content_type = headers["content-type"]
+                filename = url.split("/")[-1]
+
+                with open('/tmp/tmp.file', 'wb') as f:
+                    response.raw.decode_content = True
+                    shutil.copyfileobj(response.raw, f)
+            # TODO NE DELA
+                img = Image(page_id=id, filename=filename, data=File(f), accessed_time=timezone.now(),
+                            content_type=content_type)
+                img.save()
+                logger.info('Img saved')
+            return response.text, response.status_code
+        except Exception as e:
+            logger.info('Error in download_file_and_save_image_file')
+            logger.error(e)
+        return None, 400
+        pass
+
 
 if __name__ == "__main__":
     # url samples
@@ -125,7 +158,7 @@ if __name__ == "__main__":
     downloader = HttpDownloader()
 
     # # simple tests
-    body = downloader.get_page_body(url1)
+    # body = downloader.get_page_body(url1)
 
     # sitemap = downloader.get_sitemap_for_url('https://google.com', True)
 
@@ -143,3 +176,5 @@ if __name__ == "__main__":
     #
     # a, status = downloader.head("http://google.si/sitemap.xml")
     # logger.info(a.headers)
+    a, _ = downloader.head('http://www.geoportal.gov.si/')
+    print(a.headers)

@@ -5,7 +5,7 @@ from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 from sites.helpers.Parser.RobotsParser import RobotsParser
 from sites.helpers.Parser.Extractor import Extractor
 from sites.models import PageType
-from sites.helpers.Crawler.UrlUtils import url_fix_relative
+from sites.helpers.Crawler.UrlUtils import url_fix_relative, fix_image_url, get_domain
 
 logger = getLogger(__name__)
 
@@ -70,7 +70,9 @@ class Crawler:
 
         if not empty:
             current_url = page.url
+            domain = get_domain(current_url)
             logger.info("Got obj from frontier %s" % current_url)
+            logger.info("Domain %s" % domain)
 
             # [CRAWL DELAY]
             # get crawl delay for page
@@ -109,12 +111,16 @@ class Crawler:
             # [IMAGE]
             logger.info("[IMAGE]")
             # TODO: fix extracted URLs & save extracted images to DB
-            # image_urls = self.extractor.parse_img_urls(cleaned_html)
+            image_urls = self.extractor.parse_img_urls(cleaned_html)
+            if len(image_urls) > 0:
+                logger.info("Found %d img url" % len(image_urls))
+                logger.info(image_urls)
 
             # [EXTRACT additional data types -> PDF, etc.]
             logger.info("[FILES]")
             # TODO extract additional documents and save them to DB
-            # document_urls = self.extractor.parse_files(cleaned_html)
+            document_urls = self.extractor.parse_files(cleaned_html)
+            logger.info("Found %d documents" % len(document_urls))
 
             # [ROBOTS]
             logger.info("[ROBOTS]")
@@ -122,28 +128,28 @@ class Crawler:
             robots_content = page.site.robots_content
             if robots_content:
                 logger.info("Handle robots.txt")
-                self.robotParser = RobotsParser(current_url)
-                self.robotParser.set_robots_content(robots_content)
-                self.robotParser.parse_robots_file()
+                try:
+                    self.robotParser = RobotsParser(domain)
+                    self.robotParser.set_robots_content(robots_content)
+                    self.robotParser.parse_robots_file()
 
-                # [SITEMAP EXTRACTION]
-                robots_sitemap_urls = self.robotParser.parse_sitemap_url_in_robots_file()
-                logger.info("List of sitemaps in robots %s" % robots_sitemap_urls)
+                    # [SITEMAP EXTRACTION]
+                    robots_sitemap_urls = self.robotParser.parse_sitemap_url_in_robots_file()
+                    logger.info("List of sitemaps in robots %s" % robots_sitemap_urls)
 
-                # [CRAWL DELAY]
-                crawl_delay = self.robotParser.get_crawl_delay()
-                if request_rate:
-                    logger.info("Got crawl delay from robots %s" % crawl_delay)
+                    # [CRAWL DELAY]
+                    crawl_delay = self.robotParser.get_crawl_delay()
+                    if request_rate:
+                        logger.info("Got crawl delay from robots %s" % crawl_delay)
 
-                # [REQUEST RATE] TODO: not covered - maybe not needed
-                request_rate = self.robotParser.get_request_rate()
-                if request_rate:
-                    logger.info("Got request rate from robots %s" % request_rate)
+                    # [REQUEST RATE] TODO: not covered - maybe not needed
+                    request_rate = self.robotParser.get_request_rate()
+                    if request_rate:
+                        logger.info("Got request rate from robots %s" % request_rate)
 
-                # HOW TO HANDLE REQUEST RATE AND CRAWL DELAY
-                """
-                In page table we have accessed time attr. Use that time to determine if we can crawl this page
-                """
+                    # HOW TO HANDLE REQUEST RATE AND CRAWL DELAY
+                except:
+                    logger.info("Error reading robots")
             else:
                 logger.info("Robots not found")
 
@@ -215,6 +221,13 @@ class Crawler:
                             self.frontier.add_url(from_page=page, new_url=tmp_url)
 
                 logger.info("Frontier updated")
+
+                logger.info("Saving images")
+                for u in image_urls:
+                    tmp_url = fix_image_url(u, current_url)
+                    if tmp_url:
+                        self.downloader.download_file_and_save_image_file(tmp_url, page.id)
+                logger.info("Done")
             finally:
                 logger.info("Releasing lock")
                 self.add_url_lock.release()

@@ -1,8 +1,37 @@
 from urllib.parse import urldefrag, urlparse, urljoin
+import re
 
 
 class UrlUtils:
     pass
+
+
+def get_domain(url):
+    return "http://" + urlparse(url).netloc
+
+
+def fix_image_url(url, caller_url):
+    allowed_domains = ["www.evem.gov.si", "www.e-uprava.gov.si", "www.podatki.gov.si", "www.e-prostor.gov.si"]
+    valid_url_regex = re.compile(
+        r'^(?:http|ftp)s?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+        r'localhost|'  # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+        r'(?::\d+)?'  # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+    if re.match(valid_url_regex, url) is not None:
+        url = urljoin(caller_url, url, False)
+
+    url_parsed = urlparse(url)
+    if not url_parsed.scheme:
+        url = "http://" + url
+
+    # if url_parsed.netloc in allowed_domains:
+    #     return url
+    #
+    # return None
+    return url
 
 
 def url_fix_relative(url, caller_url, only_gov_si=True):
@@ -20,9 +49,9 @@ def url_fix_relative(url, caller_url, only_gov_si=True):
     if not url_parsed.scheme:
         url = "http://" + url
 
-    allowed_extensions = ["aspx","axd","asx","asmx","ashx","CSS","css","cfm","yaws","swf","html","htm","xhtml","jhtml",
-                          "jsp","jspx","wss","do","action","js","pl","php","php4","php3","phtml","py","rb","rhtml",
-                          "shtml","xml","rss","svg","cgi","dll"]
+    allowed_extensions = ["aspx", "axd", "asx", "asmx", "ashx", "cfm", "yaws", "swf", "html", "htm", "xhtml", "jhtml",
+                          "jsp", "jspx", "do", "action", "js", "pl", "php", "php4", "php3", "phtml", "py", "rb",
+                          "rhtml", "shtml", "xml"]
 
     if len(url_parsed.path.split(".")) != 1:
         if url_parsed.path.split(".")[-1] not in allowed_extensions:
