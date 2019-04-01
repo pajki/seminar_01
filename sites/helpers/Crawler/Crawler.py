@@ -35,20 +35,6 @@ class Crawler:
         page.save()
         logger.info("Paged {} saved.".format(page.url))
 
-    def save_img_url_to_db(self):
-        """
-        # TODO
-        :return:
-        """
-        pass
-
-    def save_document_to_db(self):
-        """
-        # TODO
-        :return:
-        """
-        pass
-
     def run(self):
         logger.info("\n---------------------------------------------------------------------------------------------")
         logger.info("Running crawler")
@@ -110,15 +96,11 @@ class Crawler:
 
             # [IMAGE]
             logger.info("[IMAGE]")
-            # TODO: fix extracted URLs & save extracted images to DB
             image_urls = self.extractor.parse_img_urls(cleaned_html)
-            if len(image_urls) > 0:
-                logger.info("Found %d img url" % len(image_urls))
-                logger.info(image_urls)
+            logger.info("Found %d img urls" % len(image_urls))
 
-            # [EXTRACT additional data types -> PDF, etc.]
+            # [FILES]
             logger.info("[FILES]")
-            # TODO extract additional documents and save them to DB
             document_urls = self.extractor.parse_files(cleaned_html)
             logger.info("Found %d documents" % len(document_urls))
 
@@ -142,7 +124,7 @@ class Crawler:
                     if request_rate:
                         logger.info("Got crawl delay from robots %s" % crawl_delay)
 
-                    # [REQUEST RATE] TODO: not covered - maybe not needed
+                    # [REQUEST RATE]
                     request_rate = self.robotParser.get_request_rate()
                     if request_rate:
                         logger.info("Got request rate from robots %s" % request_rate)
@@ -186,9 +168,6 @@ class Crawler:
             else:
                 filtered_urls = all_urls
 
-            # [EXTRACT additional data types -> PDF, etc.]
-            # TODO extract additional documents and save them to DB
-
             logger.info("Acquiring lock")
             self.add_url_lock.acquire()
             logger.info("Lock acquired")
@@ -198,12 +177,6 @@ class Crawler:
                 # update page entry
                 logger.info("saving page")
                 self.update_current_page_entry(page, http_status_code, cleaned_html)
-                # save images
-                # logger.info("saving img")
-                # self.save_img_url_to_db()
-                # save additional documents
-                # logger.info("saving documents")
-                # self.save_document_to_db()
 
                 if len(filtered_urls) > 500:
                     logger.info("Skipping to much to handle")
