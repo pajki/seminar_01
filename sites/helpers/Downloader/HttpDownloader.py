@@ -1,10 +1,8 @@
 import requests
-import shutil
 from logging import getLogger
 from urllib.robotparser import RobotFileParser
 from sites.models import Image
 from django.utils import timezone
-from django.core.files.base import File
 
 logger = getLogger(__name__)
 
@@ -134,11 +132,7 @@ class HttpDownloader:
                 content_type = headers["content-type"]
                 filename = url.split("/")[-1]
 
-                with open('/tmp/tmp.file', 'wb') as f:
-                    response.raw.decode_content = True
-                    shutil.copyfileobj(response.raw, f)
-            # TODO NE DELA
-                img = Image(page_id=id, filename=filename, data=File(f), accessed_time=timezone.now(),
+                img = Image(page_id=id, filename=filename, data=response.content, accessed_time=timezone.now(),
                             content_type=content_type)
                 img.save()
                 logger.info('Img saved')
