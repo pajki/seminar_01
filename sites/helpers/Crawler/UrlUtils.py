@@ -10,7 +10,7 @@ def get_domain(url):
     return "http://" + urlparse(url).netloc
 
 
-def fix_image_url(url, caller_url):
+def fix_file_url(url, caller_url):
     allowed_domains = ["www.evem.gov.si", "www.e-uprava.gov.si", "www.podatki.gov.si", "www.e-prostor.gov.si"]
     valid_url_regex = re.compile(
         r'^(?:http|ftp)s?://'  # http:// or https://
@@ -27,11 +27,10 @@ def fix_image_url(url, caller_url):
     if not url_parsed.scheme:
         url = "http://" + url
 
-    # if url_parsed.netloc in allowed_domains:
-    #     return url
-    #
-    # return None
-    return url
+    if url_parsed.netloc in allowed_domains:
+        return url
+
+    return None
 
 
 def url_fix_relative(url, caller_url, only_gov_si=True):

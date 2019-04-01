@@ -5,7 +5,7 @@ from sites.helpers.Downloader.HttpDownloader import HttpDownloader
 from sites.helpers.Parser.RobotsParser import RobotsParser
 from sites.helpers.Parser.Extractor import Extractor
 from sites.models import PageType
-from sites.helpers.Crawler.UrlUtils import url_fix_relative, fix_image_url, get_domain
+from sites.helpers.Crawler.UrlUtils import url_fix_relative, fix_file_url, get_domain
 
 logger = getLogger(__name__)
 
@@ -221,12 +221,19 @@ class Crawler:
                             self.frontier.add_url(from_page=page, new_url=tmp_url)
 
                 logger.info("Frontier updated")
-
+                # [SAVE IMAGES]
                 logger.info("Saving images")
                 for u in image_urls:
-                    tmp_url = fix_image_url(u, current_url)
+                    tmp_url = fix_file_url(u, current_url)
                     if tmp_url:
                         self.downloader.download_file_and_save_image_file(tmp_url, page.id)
+                logger.info("Done")
+                # [SAVE FILES]
+                logger.info("Saving files")
+                for u in document_urls:
+                    tmp_url = fix_file_url(u, current_url)
+                    if tmp_url:
+                        self.downloader.download_file_and_save(tmp_url, page.id)
                 logger.info("Done")
             finally:
                 logger.info("Releasing lock")
