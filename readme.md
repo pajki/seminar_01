@@ -11,6 +11,11 @@ Group Pajki
 Initial setup requires only a few simple steps. To avoid any python packages issues, it
 is recommended to setup a fresh virtual environment.
 
+Clone the project.
+
+    # Clone the project
+    git clone git@github.com:pajki/seminar_01.git
+
 Firstly we install the postgres database and create a database and user that are defined
 in our project:
     
@@ -35,11 +40,8 @@ in our project:
     # Don't forget to change the path to the importdb.sql file!
     psql -h localhost -d crawldb -U crawldb -p 5432 -a -w -f /home/andraz/Projects/seminar_01/importdb.sql
     
-Secondly we clone the project, create a virtual environment (optional), install the required
-packages and migrate the database to the current state (no extra SQL script needed).
-
-    # Clone the project
-    git clone git@github.com:pajki/seminar_01.git
+Secondly we create a virtual environment (optional), install the required
+packages and migrate the database to the current state.
     
     # Optionally create a fresh virtual environment (docs: https://virtualenvwrapper.readthedocs.io/en/latest/install.html)
     mkvirtualenv -p /usr/bin/python3 pajki_seminar01
@@ -50,6 +52,12 @@ packages and migrate the database to the current state (no extra SQL script need
     pip install -r requirements.txt
     # Migrate the database
     python manage.py migrate
+    
+To run the crawler, there is a custom manage.py command. Optionally we can resume operation with restoring the frontier 
+from the database by passing --restore flag. Number of threads must passed.
+    
+    # Run the crawler
+    python manage.py startcrawler 16 
     
 If we want to manage data, we can easily achieve this by accessing the Django admin.
     
