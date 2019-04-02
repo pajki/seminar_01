@@ -55,10 +55,9 @@ packages and migrate the database to the current state.
     pip install -r requirements.txt
     # Migrate the database
     python manage.py migrate
-
-## Run crawler
+    
 To run the crawler, there is a custom manage.py command. Optionally we can resume operation with restoring the frontier 
-from the database by passing --restore flag. Number of threads must passed.
+from the database by passing --restore flag. Number of threads must be passed.
     
     # Run the crawler
     python manage.py startcrawler 16 
