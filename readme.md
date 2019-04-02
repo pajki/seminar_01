@@ -6,8 +6,7 @@ Group Pajki
 - Luka Podgoršek
 - Iztok Ramovš
 
-As our database was quite stubborn and didn't shrink in size after truncating and vacuuming the table, here is the [link](https://drive.google.com/open?id=1kzMguXgOfQ9M4kRDTv2j_5p4IbVzgN3x) 
-to our database dump.
+As our database was quite stubborn and didn't shrink in size after truncating and vacuuming the table, here is the [link](https://drive.google.com/open?id=1kzMguXgOfQ9M4kRDTv2j_5p4IbVzgN3x) to our database dump.
 
 ## Initial setup
 
