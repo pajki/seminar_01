@@ -57,7 +57,7 @@ packages and migrate the database to the current state.
     python manage.py migrate
     
 To run the crawler, there is a custom manage.py command. Optionally we can resume operation with restoring the frontier 
-from the database by passing --restore flag. Number of threads must passed.
+from the database by passing --restore flag. Number of threads must be passed.
     
     # Run the crawler
     python manage.py startcrawler 16 
