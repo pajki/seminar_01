@@ -6,6 +6,9 @@ Group Pajki
 - Luka Podgoršek
 - Iztok Ramovš
 
+As our database was quite stubborn and didn't shrink in size after truncating and vacuuming the table, here is the link 
+to our database dump.
+
 ## Initial setup
 
 Initial setup requires only a few simple steps. To avoid any python packages issues, it
